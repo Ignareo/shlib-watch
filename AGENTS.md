@@ -40,7 +40,9 @@ cd sampler && npm run check           # 查看今天是否为采样日
 - 借阅类型分桶（前端 `bucketOf()`）：含"参考外借"→橙（馆内借读）；含"保存"/"仅供阅览"→灰；含"普通外借"或 null→绿
 - index.json 中 `callNumber` 兼容两种形态：字符串（单索书号）或数组（多卷册），前端用 `callNumberText()` 统一处理
 - **book id 关联历史文件** `data/history/{id}.json`：采样前 `assignStableIds`（sampler/src/books.js）按索书号集合→书名沿用既有 index.json 的 id，新书分配未占用 id（不复用已删除书的 id）；勿让 id 随 books.txt 行号漂移，否则历史串书
-- 书单助手草稿存浏览器 localStorage（key `booklist-draft`），不写入仓库；生效必须提交 books.txt
+- 书单助手草稿存浏览器 localStorage（key `booklist-draft`），不写入仓库；生效必须提交 books.txt。编辑器为**数据模型驱动**（`rows` 数组渲染成分段表格）：分组段标题行可重命名/解散分组，行首 ⠿ 手柄拖拽调序/换组（HTML5 DnD，仅桌面端）；索书号**随改随校验**（无手动校验按钮）；产物只保留「下载 books.txt」（无生成预览/复制按钮）；草稿不再含 tags（读取旧草稿时忽略该字段）
+- 筛选条两段：在馆状态 pills（单选）＋分组 chips（有分组数据才出现，再点取消），可叠加过滤；书卡按 `group` 分节渲染，未分组节标题为「未分组」。**前端已不再展示/编辑标签**（books.txt 第 4 列标签 sampler 仍会解析写入 index.json，前端忽略）
+- **难借分口径说明全站只有一处**（概览栏下方 `#score-explainer`，书卡不再重复）；分享：书卡标题旁「分享」按钮（移动端 Web Share API / 桌面端复制 `#card-id` 锚点链接，渲染后补一次 hash 定位），分享卡片图 `docs/og-image.png`（1200×630，og:image 用相对路径，部署域名确定后改绝对 URL）
 - 采样器修改后同步更新 `sampler/test/run.js` 的 fixture 测试；前端改动需验证真实数据和 demo 两种模式
 - 代码注释、commit message 用中文，风格参照现有代码
 

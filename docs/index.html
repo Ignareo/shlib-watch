@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>图书难借吗 · 上海图书馆馆藏观测</title>
   <meta name="description" content="周期性观测上海图书馆指定图书的馆藏状态，用数据回答「这本书到底有多难借」。">
+  <!-- 分享卡片（微信/微博/iMessage 等读取 Open Graph）。og:image 用的是相对路径，
+       部署域名确定后建议改成绝对 URL（如 https://<user>.github.io/<repo>/og-image.png），部分平台不认相对路径 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="图书难借吗">
+  <meta property="og:title" content="图书难借吗 · 上海图书馆馆藏观测">
+  <meta property="og:description" content="周期性观测上海图书馆指定图书的馆藏状态：哪些现在可借、去哪个馆借、哪些只能馆内阅览，用积累的难借分回答「这本书要不要直接买」。">
+  <meta property="og:image" content="og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="zh_CN">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#ece4d9">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -32,6 +44,7 @@
       <div class="stat-cell"><div class="num" id="stat-score">—</div><div class="label">平均难借分</div></div>
       <div class="stat-cell"><div class="num" id="stat-days">—</div><div class="label">观测天数</div></div>
     </section>
+    <div class="score-explainer" id="score-explainer" hidden>难借分 0–100，越高越难借：在架率按册数折减 ＋ 周末落差（周末样本≥5 才计）＋ 连续借空加分；只统计普通外借册。&lt;35 随手可借 · 35–65 需要蹲点 · &gt;65 极其抢手</div>
 
     <!-- 当前可借情况 -->
     <section class="avail-board" id="avail-board" hidden>
@@ -50,11 +63,16 @@
       <div class="avail-note" id="avail-note"></div>
     </section>
 
-    <!-- 书卡筛选 -->
+    <!-- 书卡筛选：在馆状态 / 分组 两段，分组段有数据时才出现 -->
     <div class="branch-bar" id="branch-bar" hidden>
-      <span>筛选：</span>
-      <span id="branch-pills"></span>
-      <span id="tag-chips" hidden></span>
+      <span class="filter-seg">
+        <span class="filter-label">在馆状态</span>
+        <span id="branch-pills"></span>
+      </span>
+      <span class="filter-seg" id="group-seg" hidden>
+        <span class="filter-label">分组</span>
+        <span id="group-chips"></span>
+      </span>
     </div>
 
     <!-- 观测口径（分馆选择，计入统计的分馆） -->
@@ -95,16 +113,14 @@
     <!-- 书单助手 -->
     <section>
       <h2 class="section-title">书单助手 <span class="en">Reading List</span></h2>
-      <p class="section-note">已自动载入当前追踪书目，可在此增删、启用/禁用、修改书名或索书号。书名可留空，只填索书号也能自动匹配。<b>所有修改自动保存在浏览器中</b>；本页面是纯静态网页，不会直接修改仓库——点「生成 books.txt」，复制或下载结果，替换仓库根目录的 <code>books.txt</code> 并提交后生效。「刷新数据」在本地服务器（<code>node server.js</code>）下会变为「重新采样」，真实执行一次采样；静态托管（GitHub Pages）下只重新拉取仓库数据，不影响本地草稿。</p>
+      <p class="section-note">已自动载入当前追踪书目，可在此增删、启用/禁用、修改书名或索书号。书名可留空，只填索书号也能自动匹配。<b>所有修改自动保存在浏览器中，索书号格式随改随校验</b>（标红即有问题）；本页面是纯静态网页，不会直接修改仓库——点「下载 books.txt」，替换仓库根目录的 <code>books.txt</code> 并提交后生效。<b>分组</b>：点段首的组名可重命名（选已有组名即合并分组），「解散分组」把组内书移回未分组；拖动行首 <b>⠿</b> 手柄可调整顺序、把书移入其他分组（桌面端）。「刷新数据」在本地服务器（<code>node server.js</code>）下会变为「重新采样」，真实执行一次采样；静态托管（GitHub Pages）下只重新拉取仓库数据，不影响本地草稿。</p>
       <div class="panel">
         <div class="prune-row">
           <input type="file" id="books-file" accept=".txt,text/plain" hidden>
           <button class="btn" id="btn-import">导入 txt 文件</button>
           <button class="btn" id="btn-add-book">+ 添加书目</button>
-          <button class="btn" id="btn-validate">校验格式</button>
-          <button class="btn primary" id="btn-generate">生成 books.txt</button>
-          <button class="btn" id="btn-copy-books" disabled>复制 books.txt</button>
-          <button class="btn" id="btn-download-books" disabled>下载 books.txt</button>
+          <button class="btn" id="btn-add-group">+ 添加分组</button>
+          <button class="btn primary" id="btn-download-books">下载 books.txt</button>
           <span style="color:var(--faint)">|</span>
           <button class="btn" id="btn-refresh">刷新数据</button>
           <span class="refresh-status" id="refresh-status"></span>
@@ -128,21 +144,20 @@
         <table class="books-editor" id="books-editor">
           <thead>
             <tr>
+              <th style="width:34px" title="拖动 ⠿ 手柄调整顺序 / 移入其他分组"></th>
               <th style="width:40px">启用</th>
               <th>书名</th>
               <th>索书号</th>
               <th>record_id（可选）</th>
-              <th style="width:110px">分组（可选）</th>
-              <th style="width:130px">标签（可选）</th>
               <th style="width:76px">状态</th>
               <th style="width:60px"></th>
             </tr>
           </thead>
           <tbody id="books-tbody"></tbody>
         </table>
+        <datalist id="group-name-list"></datalist>
         <div class="helper-valid" id="helper-valid"></div>
         <div class="helper-note" id="helper-draft-note" hidden>已载入浏览器中保存的书单草稿（未提交到仓库）。修改会自动保存；「重置为仓库书单」可丢弃草稿。</div>
-        <pre class="helper-output" id="helper-output"></pre>
       </div>
     </section>
 

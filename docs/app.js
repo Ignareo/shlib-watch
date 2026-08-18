@@ -6,7 +6,7 @@ const state = {
   index: null,          // docs/data/index.json
   histories: {},        // bookId -> history json
   filter: "全部",       // 书卡筛选：全部 / 可以外借 / 全部借出 / 仅馆内阅览
-  tag: null,            // 标签筛选：null 为不限；书单里有 tags 时筛选条才出现标签 chips
+  group: null,          // 分组筛选：null 为不限；书单里有 group 时筛选条才出现分组 chips
   demo: false,
   localServer: false,   // 是否由 server.js 托管（决定刷新按钮行为）
   charts: [],           // echarts 实例，重绘前销毁
@@ -115,6 +115,7 @@ async function refreshData() {
 function showEmptyState() {
   $("#empty-state").hidden = false;
   $("#stats-band").hidden = true;
+  $("#score-explainer").hidden = true;
   $("#avail-board").hidden = true;
   $("#branch-bar").hidden = true;
   $("#history-section").hidden = true;
@@ -417,8 +418,8 @@ function formatTs(iso) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-// 筛选 pills：按当前可借状态过滤书卡（分馆口径见 mainBranches()，可在分馆偏好中调整）
-// 书单里有 tags 时追加标签 chips，与状态 pills 叠加过滤（再点选中的标签可取消）
+// 筛选条两段：在馆状态 pills / 分组 chips（书单有 group 时才出现），可叠加过滤
+// （再点选中的分组可取消；分馆口径见 mainBranches()，可在观测口径行调整）
 function renderFilterBar() {
   const bar = $("#branch-bar");
   bar.hidden = false;
@@ -433,22 +434,26 @@ function renderFilterBar() {
     });
   });
 
-  const allTags = [...new Set((state.index?.books ?? []).flatMap((b) => b.tags ?? []))];
-  const tagBox = $("#tag-chips");
-  if (!allTags.length) {
-    tagBox.hidden = true;
-    tagBox.innerHTML = "";
-    state.tag = null;
+  // 分组 chips：按书单出现顺序收集分组名（保持 books.txt 的排列次序）
+  const groups = [];
+  for (const b of state.index?.books ?? []) {
+    if (b.group && !groups.includes(b.group)) groups.push(b.group);
+  }
+  const groupSeg = $("#group-seg");
+  if (!groups.length) {
+    groupSeg.hidden = true;
+    $("#group-chips").innerHTML = "";
+    state.group = null;
     return;
   }
-  if (state.tag && !allTags.includes(state.tag)) state.tag = null; // 书单里已没有该标签
-  tagBox.hidden = false;
-  tagBox.innerHTML = `<span class="tag-chips-label">标签：</span>` + allTags
-    .map((t) => `<button class="tag-chip ${t === state.tag ? "active" : ""}" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>`)
+  if (state.group && !groups.includes(state.group)) state.group = null; // 书单里已没有该分组
+  groupSeg.hidden = false;
+  $("#group-chips").innerHTML = groups
+    .map((g) => `<button class="group-chip ${g === state.group ? "active" : ""}" data-group="${escapeHtml(g)}">${escapeHtml(g)}</button>`)
     .join("");
-  tagBox.querySelectorAll(".tag-chip").forEach((btn) => {
+  $("#group-chips").querySelectorAll(".group-chip").forEach((btn) => {
     btn.addEventListener("click", () => {
-      state.tag = state.tag === btn.dataset.tag ? null : btn.dataset.tag;
+      state.group = state.group === btn.dataset.group ? null : btn.dataset.group;
       render();
     });
   });
@@ -494,6 +499,7 @@ function renderOverview() {
     : null;
 
   $("#stats-band").hidden = false;
+  $("#score-explainer").hidden = false; // 难借分口径说明全站只此一处（书卡不再重复）
   $("#stat-books").innerHTML = `${books.length} <small>本</small>`;
   $("#stat-available").innerHTML = `${availableNow} <small>/ ${measurable.length} 本</small>`;
   $("#stat-score").innerHTML = avgScore !== null ? String(avgScore) : `<small>数据积累中</small>`;
@@ -514,12 +520,17 @@ function renderBooks() {
   }));
   const visible = items.filter(
     (x) =>
-      (!state.tag || (x.book.tags ?? []).includes(state.tag)) &&
+      (!state.group || (x.book.group ?? null) === state.group) &&
       (state.filter === "全部" ||
         (state.filter === "可以外借" && x.group === "available") ||
         (state.filter === "全部借出" && x.group === "borrowed_out") ||
         (state.filter === "仅馆内阅览" && x.group === "inhouse"))
   );
+
+  if (!visible.length) {
+    list.innerHTML = `<div class="filter-empty">没有符合当前筛选条件的书</div>`;
+    return;
+  }
 
   // 按书单分组（group 字段）分节，保持书单原顺序；无分组的书归入默认节
   // 全部书都无分组（旧数据）时不渲染节标题，与旧版展示一致
@@ -534,7 +545,7 @@ function renderBooks() {
     if (hasGroups) {
       const h = document.createElement("h2");
       h.className = "group-title";
-      h.textContent = groupName ?? "其他";
+      h.textContent = groupName ?? "未分组";
       list.appendChild(h);
     }
     for (const { book, stats } of sectionItems) {
@@ -547,6 +558,12 @@ function renderBooks() {
     if (!stats || stats.noOrdinary) continue;
     drawTrendChart(`trend-${book.id}`, stats.rows);
     drawWeekChart(`week-${book.id}`, stats.weekdayRate, stats.weekendRate);
+  }
+
+  // 分享链接的 #card-id 锚点：原生 hash 滚动发生在渲染之前（元素尚不存在），这里补一次定位；每次加载只滚一次
+  if (!state.hashScrolled && location.hash.startsWith("#card-")) {
+    state.hashScrolled = true;
+    document.getElementById(location.hash.slice(1))?.scrollIntoView();
   }
 }
 
@@ -570,14 +587,12 @@ function buildBookCard(book, stats) {
     book.authors?.length ? escapeHtml(book.authors.join("，")) : null,
     [book.publisher, book.publishedYear].filter(Boolean).map(escapeHtml).join(" ") || null,
     book.materialType ? escapeHtml(book.materialType) : null,
-    // 书单标签（books.txt 第四列）：小徽章展示
-    book.tags?.length ? book.tags.map((t) => `<span class="book-tag">${escapeHtml(t)}</span>`).join("") : null,
     book.needsReview ? `<span class="review-flag" title="${escapeHtml(candidatesTitle(book))}">版本待核对</span>` : null,
   ].filter(Boolean);
 
   const titleHtml = book.recordUrl
-    ? `<a href="${escapeHtml(book.recordUrl)}" target="_blank" rel="noopener">${escapeHtml(book.title)}</a>`
-    : escapeHtml(book.title);
+    ? `<a href="${escapeHtml(book.recordUrl)}" target="_blank" rel="noopener">${escapeHtml(book.title)}</a>${shareBtnHtml(book)}`
+    : `${escapeHtml(book.title)}${shareBtnHtml(book)}`;
 
   let bodyHtml;
   if (book.resolveStatus === "unresolved") {
@@ -628,7 +643,6 @@ function buildBookCard(book, stats) {
         ${scoreHtml}
         <span class="score-badge ${rating.cls}">${rating.text}</span>
         <div class="score-meter"><i style="width:${stats && !noOrdinary && stats.samples >= 3 ? stats.score : 0}%"></i></div>
-        <div class="score-caption">难借分越高越难借<br>按普通外借册：在架率（按册数折减）· 周末落差（样本≥5 才计）· 连续借空加分</div>
       </div>
     </div>
     <div>
@@ -636,7 +650,38 @@ function buildBookCard(book, stats) {
       <div class="book-meta">${metaBits.join("")}</div>
       ${bodyHtml}
     </div>`;
+  bindShareBtn(card, book);
   return card;
+}
+
+// 书卡标题旁的「分享」按钮：移动端优先调起系统分享（Web Share API），桌面端复制带锚点的书卡链接
+function shareBtnHtml(book) {
+  return `<button class="share-btn" data-share="${escapeHtml(book.id)}" title="分享这本书（复制带定位的链接）">分享</button>`;
+}
+
+function bindShareBtn(card, book) {
+  card.querySelector(".share-btn")?.addEventListener("click", async () => {
+    const url = `${location.origin}${location.pathname}#card-${book.id}`;
+    const payload = {
+      title: `《${book.title}》有多难借？`,
+      text: "上海图书馆馆藏观测：这本书现在能不能借、去哪个馆借、有多难借",
+      url,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(payload);
+      } catch {
+        /* 用户取消分享，无需提示 */
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast("已复制本书链接 —— 打开即定位到这张书卡");
+    } catch {
+      toast("复制失败，请手动复制地址栏链接");
+    }
+  });
 }
 
 // 书卡顶部一行行动建议：按优先级取第一条命中
@@ -1043,77 +1088,218 @@ function parseBookLines(text) {
 
 function setupBooksHelper() {
   const tbody = $("#books-tbody");
+  // 编辑器数据模型（DOM 由它渲染，输入事件写回模型，结构性操作后整体重渲染）：
+  // { id, title, callNumber, recordId, group, disabled, resolveStatus, touched }
+  let rows = [];
+  let dragIdx = null; // 正在拖拽的行在 rows 中的下标（null 表示未在拖拽）
 
-  function statusTagHtml(status) {
-    switch (status) {
+  function newRow(book = {}) {
+    return {
+      id: book.id || `new-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      title: book.title ?? "",
+      callNumber: book.callNumber ?? "",
+      recordId: book.recordId ?? "",
+      group: book.group ?? null,
+      disabled: book.disabled ?? false,
+      resolveStatus: book.resolveStatus ?? "new",
+      touched: false,
+    };
+  }
+
+  function statusTagHtml(row) {
+    if (row.touched) return `<span class="resolve-tag warn">已修改</span>`;
+    switch (row.resolveStatus) {
       case "resolved": return `<span class="resolve-tag ok">已匹配</span>`;
       case "unresolved": return `<span class="resolve-tag bad">未匹配</span>`;
       case "new": return `<span class="resolve-tag">新增</span>`;
       case "draft": return `<span class="resolve-tag">草稿</span>`;
-      default: return `<span class="resolve-tag">${escapeHtml(status || "—")}</span>`;
+      default: return `<span class="resolve-tag">${escapeHtml(row.resolveStatus || "—")}</span>`;
     }
   }
 
-  function addRow(book = {}) {
+  // 分组标题行：组名可改（input 写回模型，失焦/回车后重渲染以合并同名单元）；
+  // 「解散分组」把本段的书移回未分组。未分组段只在已有分组时出现，作为拖出分组的落点
+  function buildGroupRow(group, firstId, count) {
     const tr = document.createElement("tr");
-    tr.dataset.id = book.id || `new-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    tr.innerHTML = `
-      <td class="tc"><input type="checkbox" class="book-enabled" ${book.disabled ? "" : "checked"}></td>
-      <td><input type="text" class="book-title" placeholder="可留空" value="${escapeHtml(book.title ?? "")}"></td>
-      <td><input type="text" class="book-call" placeholder="必填" value="${escapeHtml(book.callNumber ?? "")}"></td>
-      <td><input type="text" class="book-record" placeholder="可选" value="${escapeHtml(book.recordId ?? "")}"></td>
-      <td><input type="text" class="book-group" placeholder="可选" value="${escapeHtml(book.group ?? "")}"></td>
-      <td><input type="text" class="book-tags" placeholder="可选，逗号分隔" value="${escapeHtml((book.tags ?? []).join(","))}"></td>
-      <td class="tc row-status">${statusTagHtml(book.resolveStatus ?? "new")}</td>
-      <td class="tc"><button class="btn-delete" title="删除">删除</button></td>
-    `;
-    tr.querySelector(".btn-delete").addEventListener("click", () => { tr.remove(); saveDraft(); });
-    tr.querySelector(".book-enabled").addEventListener("change", () => { updateRowStyle(tr); saveDraft(); });
-    // 编辑过内容后，原来的匹配状态失效，标记为「已修改」；同时自动保存草稿
-    tr.querySelectorAll(".book-title, .book-call, .book-record, .book-group, .book-tags").forEach((input) => {
-      input.addEventListener("input", () => {
-        tr.querySelector(".row-status").innerHTML = `<span class="resolve-tag warn">已修改</span>`;
+    tr.className = "group-row";
+    tr.dataset.firstId = firstId ?? "";
+    if (group) {
+      tr.innerHTML = `
+        <td colspan="8">
+          <span class="group-tag">分组</span>
+          <input type="text" class="group-name" list="group-name-list" value="${escapeHtml(group)}" title="改名作用于本组全部书目；输入已有组名可合并分组">
+          <span class="group-count">${count} 本</span>
+          <button class="btn-subtle group-ungroup">解散分组</button>
+        </td>`;
+      const input = tr.querySelector(".group-name");
+      const apply = (value) => {
+        const name = value.trim() || null;
+        const start = rows.findIndex((r) => r.id === firstId);
+        if (start < 0) return;
+        const segGroup = rows[start].group; // 以段首当前组名为段键，支持失焦前连续多次改名
+        if (segGroup === name) return;
+        for (let i = start; i < rows.length && rows[i].group === segGroup; i++) rows[i].group = name;
+      };
+      input.addEventListener("input", () => { apply(input.value); saveDraft(); });
+      input.addEventListener("change", () => { renderEditor(); saveDraft(); });
+      tr.querySelector(".group-ungroup").addEventListener("click", () => {
+        apply("");
+        renderEditor();
         saveDraft();
       });
+    } else {
+      tr.innerHTML = `
+        <td colspan="8">
+          <span class="group-tag none">未分组</span>
+          <span class="group-hint">把书拖到这一段可移出分组</span>
+        </td>`;
+    }
+    return tr;
+  }
+
+  function buildBookRow(row) {
+    const tr = document.createElement("tr");
+    tr.className = "book-row";
+    tr.dataset.id = row.id;
+    tr.classList.toggle("disabled", row.disabled);
+    tr.innerHTML = `
+      <td class="tc drag-cell"><span class="drag-handle" draggable="true" title="拖动调整顺序 / 移入其他分组">⠿</span></td>
+      <td class="tc"><input type="checkbox" class="book-enabled" ${row.disabled ? "" : "checked"}></td>
+      <td><input type="text" class="book-title" placeholder="可留空" value="${escapeHtml(row.title)}"></td>
+      <td><input type="text" class="book-call" placeholder="必填" value="${escapeHtml(row.callNumber)}"></td>
+      <td><input type="text" class="book-record" placeholder="可选" value="${escapeHtml(row.recordId)}"></td>
+      <td class="tc row-status">${statusTagHtml(row)}</td>
+      <td class="tc"><button class="btn-delete" title="删除">删除</button></td>
+    `;
+    tr.querySelector(".btn-delete").addEventListener("click", () => {
+      rows = rows.filter((r) => r.id !== row.id);
+      renderEditor();
+      saveDraft();
     });
-    tbody.appendChild(tr);
-    updateRowStyle(tr);
+    tr.querySelector(".book-enabled").addEventListener("change", (e) => {
+      row.disabled = !e.target.checked;
+      tr.classList.toggle("disabled", row.disabled);
+      saveDraft();
+    });
+    // 编辑过内容后，原来的匹配状态失效，标记为「已修改」；同时自动保存草稿
+    const bind = (sel, apply) => {
+      tr.querySelector(sel).addEventListener("input", (e) => {
+        apply(e.target.value);
+        row.touched = true;
+        tr.querySelector(".row-status").innerHTML = statusTagHtml(row);
+        saveDraft();
+      });
+    };
+    bind(".book-title", (v) => (row.title = v.trim()));
+    // 索书号随输随校验（标红 + 汇总行即时刷新）
+    bind(".book-call", (v) => { row.callNumber = v.trim(); validate(); });
+    bind(".book-record", (v) => (row.recordId = v.trim()));
+
+    // 拖拽：只有 ⠿ 手柄可拖（避免与输入框文本选择冲突）
+    const handle = tr.querySelector(".drag-handle");
+    handle.addEventListener("dragstart", (e) => {
+      dragIdx = rows.findIndex((r) => r.id === row.id);
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", row.id);
+      tr.classList.add("dragging");
+    });
+    handle.addEventListener("dragend", () => {
+      dragIdx = null;
+      tr.classList.remove("dragging");
+      clearDropHints();
+    });
+    return tr;
   }
 
-  function updateRowStyle(tr) {
-    const enabled = tr.querySelector(".book-enabled").checked;
-    tr.classList.toggle("disabled", !enabled);
+  function clearDropHints() {
+    tbody.querySelectorAll(".drop-before, .drop-after, .drop-into").forEach((el) => {
+      el.classList.remove("drop-before", "drop-after", "drop-into");
+      delete el.dataset.dropAfter;
+    });
   }
 
-  function getRows() {
-    return [...tbody.querySelectorAll("tr")].map((tr) => ({
-      title: tr.querySelector(".book-title").value.trim() || null,
-      callNumber: tr.querySelector(".book-call").value.trim() || null,
-      recordId: tr.querySelector(".book-record").value.trim() || null,
-      group: tr.querySelector(".book-group").value.trim() || null,
-      tags: tr.querySelector(".book-tags").value.split(/[,，]/).map((s) => s.trim()).filter(Boolean),
-      disabled: !tr.querySelector(".book-enabled").checked,
-    }));
+  // 落点高亮 + 记录落点：书上 = 插到该书前/后并跟随其分组；段标题上 = 插到段首
+  tbody.addEventListener("dragover", (e) => {
+    if (dragIdx === null) return;
+    const bookTr = e.target.closest("tr.book-row");
+    const groupTr = e.target.closest("tr.group-row");
+    if (!bookTr && !groupTr) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    clearDropHints();
+    if (bookTr) {
+      const rect = bookTr.getBoundingClientRect();
+      const after = e.clientY > rect.top + rect.height / 2;
+      bookTr.classList.add(after ? "drop-after" : "drop-before");
+      bookTr.dataset.dropAfter = after ? "1" : "";
+    } else {
+      groupTr.classList.add("drop-into");
+    }
+  });
+
+  tbody.addEventListener("drop", (e) => {
+    if (dragIdx === null) return;
+    const bookTr = e.target.closest("tr.book-row");
+    const groupTr = e.target.closest("tr.group-row");
+    if (!bookTr && !groupTr) return;
+    e.preventDefault();
+    if (bookTr?.dataset.id === rows[dragIdx]?.id) return; // 拖到自己身上，不动
+    if (groupTr?.dataset.firstId === rows[dragIdx]?.id) return; // 段首行拖到自己段的标题上，不动
+    const [moved] = rows.splice(dragIdx, 1);
+    if (groupTr) {
+      const pos = rows.findIndex((r) => r.id === groupTr.dataset.firstId);
+      moved.group = pos >= 0 ? rows[pos].group : null;
+      rows.splice(pos >= 0 ? pos : rows.length, 0, moved);
+    } else {
+      const targetIdx = rows.findIndex((r) => r.id === bookTr.dataset.id);
+      if (targetIdx < 0) { rows.push(moved); } // 找不到目标（理论上不会发生）退化为移到末尾
+      else {
+        moved.group = rows[targetIdx].group;
+        rows.splice(bookTr.dataset.dropAfter === "1" ? targetIdx + 1 : targetIdx, 0, moved);
+      }
+    }
+    clearDropHints();
+    renderEditor();
+    saveDraft();
+  });
+
+  // 渲染编辑器：相邻同组聚成段，段首插分组标题行；全部书都无分组时不渲染段标题
+  function renderEditor() {
+    tbody.innerHTML = "";
+    const hasGroups = rows.some((r) => r.group);
+    const names = [...new Set(rows.map((r) => r.group).filter(Boolean))];
+    $("#group-name-list").innerHTML = names.map((n) => `<option value="${escapeHtml(n)}">`).join("");
+    let i = 0;
+    while (i < rows.length) {
+      const g = rows[i].group;
+      let j = i;
+      while (j < rows.length && rows[j].group === g) j++;
+      if (hasGroups) tbody.appendChild(buildGroupRow(g, rows[i].id, j - i));
+      for (let k = i; k < j; k++) tbody.appendChild(buildBookRow(rows[k]));
+      i = j;
+    }
+    validate(); // 每次重渲染后自动校验（随改随校，不需要手动点按钮）
   }
 
   function validate() {
-    const rows = getRows();
+    const trs = tbody.querySelectorAll("tr.book-row");
     let bad = 0;
     rows.forEach((r, i) => {
-      const tr = tbody.children[i];
-      const callEl = tr.querySelector(".book-call");
+      const callEl = trs[i]?.querySelector(".book-call");
       const hasProblem = Boolean(callNumberProblem(r.callNumber));
-      callEl.classList.toggle("bad", hasProblem);
+      callEl?.classList.toggle("bad", hasProblem);
       if (hasProblem) bad++;
     });
-    $("#helper-valid").innerHTML = bad
-      ? `<span class="bad">${bad} 行索书号缺失或含空段（多卷册用 ; 分隔，如 TU-092/3965-20; TU-092/3965-17）</span>`
-      : `<span class="ok">${rows.length} 本书格式正确</span>`;
-    return { rows, bad };
+    $("#helper-valid").innerHTML = !rows.length
+      ? `<span class="bad">书单为空，请至少添加一本书</span>`
+      : bad
+        ? `<span class="bad">${bad} 行索书号缺失或含空段（多卷册用 ; 分隔，如 TU-092/3965-20; TU-092/3965-17）</span>`
+        : `<span class="ok">${rows.length} 本书格式正确</span>`;
+    return { bad };
   }
 
   function generateText() {
-    const { rows, bad } = validate();
+    const { bad } = validate();
     if (bad) {
       toast("请补全标红的索书号后再生成");
       return null;
@@ -1125,7 +1311,7 @@ function setupBooksHelper() {
     const header = [
       "# 图书难借吗 · 追踪书单",
       `# 由书单助手生成于 ${new Date().toISOString().slice(0, 10)}`,
-      "# 格式：书名 | 索书号 | record_id（可选）| 标签（可选，逗号分隔）",
+      "# 格式：书名 | 索书号 | record_id（可选）",
       "# 多卷册：索书号用 ; 分隔（如 TU-092/3965-20; TU-092/3965-17），此时 record_id 不适用",
       "# 分组：以「## 组名」行开始一个分组，作用于其后的所有书",
       "",
@@ -1140,46 +1326,54 @@ function setupBooksHelper() {
         else if (lastGroup) lines.push("##"); // 空组头：从分组回到未分组
         lastGroup = r.group;
       }
-      const line = [r.title, r.callNumber, r.recordId, r.tags.length ? r.tags.join(",") : null].filter(Boolean).join(" | ");
+      const line = [r.title, r.callNumber, r.recordId].filter(Boolean).join(" | ");
       lines.push(r.disabled ? `# ${line}` : line);
     }
     return `${header}${lines.join("\n")}\n`;
   }
 
-  // ---------- 本地草稿（localStorage 自动保存） ----------
+  // ---------- 本地草稿（localStorage 自动保存；兼容含 tags 字段的旧版草稿，读取时忽略） ----------
   const DRAFT_KEY = "booklist-draft";
 
   function saveDraft() {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(getRows()));
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(rows.map((r) => ({
+      title: r.title || null,
+      callNumber: r.callNumber || null,
+      recordId: r.recordId || null,
+      group: r.group || null,
+      disabled: r.disabled,
+    }))));
   }
 
   function readDraft() {
     try {
-      const rows = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? "null");
-      return Array.isArray(rows) && rows.length ? rows : null;
+      const saved = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? "null");
+      return Array.isArray(saved) && saved.length ? saved : null;
     } catch {
       return null;
     }
   }
 
-  function loadDraftRows(rows) {
-    tbody.innerHTML = "";
-    rows.forEach((r) => addRow({ ...r, resolveStatus: "draft" }));
+  function loadDraftRows(draftRows) {
+    rows = draftRows.map((r) => newRow({ ...r, resolveStatus: "draft" }));
+    renderEditor();
     $("#helper-draft-note").hidden = false;
-    $("#helper-valid").innerHTML = "";
   }
 
   // 初始化：用 index.json（或 demo 数据）里已有的书目填入
   function initFromIndex() {
-    tbody.innerHTML = "";
     const books = state.index?.books ?? [];
-    if (books.length) {
-      books.forEach((b) => addRow({ title: b.title, callNumber: callNumberText(b, "; "), recordId: b.recordId, group: b.group, tags: b.tags, disabled: false, resolveStatus: b.resolveStatus }));
-    } else {
-      addRow();
-    }
+    rows = books.map((b) => newRow({
+      id: b.id,
+      title: b.title,
+      callNumber: callNumberText(b, "; "),
+      recordId: b.recordId,
+      group: b.group,
+      resolveStatus: b.resolveStatus,
+    }));
+    if (!rows.length) rows = [newRow()];
+    renderEditor();
     $("#helper-draft-note").hidden = true;
-    $("#helper-valid").innerHTML = "";
   }
 
   // 加载优先级：浏览器里有草稿用草稿，否则用 index.json
@@ -1190,7 +1384,22 @@ function setupBooksHelper() {
   }
   state.initBooksHelper = initBooklist;
 
-  $("#btn-add-book").addEventListener("click", () => { addRow(); saveDraft(); });
+  $("#btn-add-book").addEventListener("click", () => {
+    rows.push(newRow()); // 追加到末尾（未分组），拖入目标分组即可
+    renderEditor();
+    saveDraft();
+  });
+
+  // 分组必须至少挂一本书才存在，因此「添加分组」= 追加一条带组名的空书目行，组名随后可改
+  $("#btn-add-group").addEventListener("click", () => {
+    let name = "新分组";
+    for (let i = 2; rows.some((r) => r.group === name); i++) name = `新分组${i}`;
+    rows.push(newRow({ group: name }));
+    renderEditor();
+    saveDraft();
+    const inputs = tbody.querySelectorAll("tr.group-row .group-name");
+    inputs[inputs.length - 1]?.select(); // 聚焦新段组名，便于立即改名
+  });
 
   $("#btn-import").addEventListener("click", () => $("#books-file").click());
   $("#books-file").addEventListener("change", async (event) => {
@@ -1198,12 +1407,10 @@ function setupBooksHelper() {
     if (!file) return;
     const text = await file.text();
     const parsed = parseBookLines(text);
-    tbody.innerHTML = "";
-    if (parsed.length) {
-      parsed.forEach((r) => addRow({ title: r.title, callNumber: r.callNumber, recordId: r.recordId, group: r.group, tags: r.tags, disabled: false }));
-    } else {
-      addRow();
-    }
+    rows = parsed.length
+      ? parsed.map((r) => newRow({ title: r.title, callNumber: r.callNumber, recordId: r.recordId, group: r.group }))
+      : [newRow()];
+    renderEditor();
     saveDraft();
     $("#helper-draft-note").hidden = false;
     toast(`已导入 ${file.name}，共 ${parsed.length} 本（已自动保存到浏览器）`);
@@ -1217,27 +1424,12 @@ function setupBooksHelper() {
     toast("已重置为仓库书单");
   });
 
-  $("#btn-validate").addEventListener("click", () => validate());
-
-  $("#btn-generate").addEventListener("click", () => {
+  // 「下载 books.txt」：先校验（有标红则中止），通过则直接生成并下载
+  $("#btn-download-books").addEventListener("click", () => {
     const text = generateText();
     if (text === null) return;
-    const output = $("#helper-output");
-    output.textContent = text;
-    output.classList.add("show");
-    $("#btn-copy-books").disabled = false;
-    $("#btn-download-books").disabled = false;
-    toast(`已生成 ${getRows().length} 条书目`);
-  });
-
-  $("#btn-copy-books").addEventListener("click", async () => {
-    await navigator.clipboard.writeText($("#helper-output").textContent);
-    toast("已复制 —— 粘贴到仓库根目录 books.txt 并提交");
-  });
-
-  $("#btn-download-books").addEventListener("click", () => {
-    downloadText("books.txt", $("#helper-output").textContent, "text/plain");
-    toast("已下载 —— 替换仓库根目录 books.txt 并提交");
+    downloadText("books.txt", text, "text/plain");
+    toast(`已下载 ${rows.length} 条书目 —— 替换仓库根目录 books.txt 并提交`);
   });
 
   $("#btn-refresh").addEventListener("click", () => {
@@ -1430,9 +1622,9 @@ function buildDemoData() {
 
   // copies: 每个分馆的副本数范围；p: 单册在架概率；drought: 连续借出期（概率/长度）
   const books = [
-    { id: "b1", title: "城市研究 : 理论与方法", callNumber: "C912.81/4422", recordId: "a1b2c3d4-1111-4000-8000-000000000001", resolveStatus: "resolved", needsReview: false, authors: ["张明"], publisher: "同济大学出版社", publishedYear: "2021", materialType: "图书", copies: [3, 5], p: 0.85, drought: [0.03, 1, 3], hasBranch: [true, true, true] },
-    { id: "b2", title: "活着", callNumber: "I247.5/8030-23", recordId: "a1b2c3d4-2222-4000-8000-000000000002", resolveStatus: "resolved", needsReview: true, authors: ["余华"], publisher: "作家出版社", publishedYear: "2012", materialType: "图书", copies: [1, 2], p: 0.3, drought: [0.05, 2, 5], hasBranch: [true, true, true], candidates: [{ recordId: "a1b2c3d4-2222-4000-8000-000000000002", title: "活着", authors: ["余华"], publishedYear: "2012" }, { recordId: "a1b2c3d4-2222-4000-8000-000000000099", title: "活着", authors: ["余华"], publishedYear: "2021" }] },
-    { id: "b3", title: "三体（多卷册示例）", callNumber: ["I247.55/4821-1", "I247.55/4821-2", "I247.55/4821-3"], recordId: "a1b2c3d4-3333-4000-8000-000000000003", resolveStatus: "resolved", needsReview: false, authors: ["刘慈欣"], publisher: "重庆出版社", publishedYear: "2017", materialType: "图书", copies: [1, 1], p: 0.1, drought: [0.15, 8, 16], hasBranch: [true, true, true] },
+    { id: "b1", title: "城市研究 : 理论与方法", callNumber: "C912.81/4422", recordId: "a1b2c3d4-1111-4000-8000-000000000001", resolveStatus: "resolved", needsReview: false, authors: ["张明"], publisher: "同济大学出版社", publishedYear: "2021", materialType: "图书", group: "城市阅读", copies: [3, 5], p: 0.85, drought: [0.03, 1, 3], hasBranch: [true, true, true] },
+    { id: "b2", title: "活着", callNumber: "I247.5/8030-23", recordId: "a1b2c3d4-2222-4000-8000-000000000002", resolveStatus: "resolved", needsReview: true, authors: ["余华"], publisher: "作家出版社", publishedYear: "2012", materialType: "图书", group: "文学小说", copies: [1, 2], p: 0.3, drought: [0.05, 2, 5], hasBranch: [true, true, true], candidates: [{ recordId: "a1b2c3d4-2222-4000-8000-000000000002", title: "活着", authors: ["余华"], publishedYear: "2012" }, { recordId: "a1b2c3d4-2222-4000-8000-000000000099", title: "活着", authors: ["余华"], publishedYear: "2021" }] },
+    { id: "b3", title: "三体（多卷册示例）", callNumber: ["I247.55/4821-1", "I247.55/4821-2", "I247.55/4821-3"], recordId: "a1b2c3d4-3333-4000-8000-000000000003", resolveStatus: "resolved", needsReview: false, authors: ["刘慈欣"], publisher: "重庆出版社", publishedYear: "2017", materialType: "图书", group: "文学小说", copies: [1, 1], p: 0.1, drought: [0.15, 8, 16], hasBranch: [true, true, true] },
     { id: "b4", title: "东京八平米", callNumber: "I313.65/4434", recordId: "a1b2c3d4-4444-4000-8000-000000000004", resolveStatus: "resolved", needsReview: false, authors: ["吉井忍"], publisher: "上海三联书店", publishedYear: "2022", materialType: "图书", copies: [2, 3], p: 0.55, drought: [0.05, 2, 5], hasBranch: [true, false, true] },
   ];
 
