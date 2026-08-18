@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-18T01:06:48.924Z",
+  "updatedAt": "2026-08-18T05:31:58.919Z",
   "schedule": "每天",
   "books": [
     {
@@ -79,6 +79,33 @@
     },
     {
       "id": "b6",
+      "title": "了不起的文明现场",
+      "callNumber": "K87/4413",
+      "recordId": "84c04631-3e29-46c1-9682-630e46262f39",
+      "recordUrl": "https://vufind.library.sh.cn/Record/84c04631-3e29-46c1-9682-630e46262f39",
+      "resolveStatus": "resolved",
+      "needsReview": false,
+      "authors": [
+        "李零"
+      ],
+      "publisher": "生活·读书·新知三联书店",
+      "publishedYear": "2020",
+      "materialType": "图书",
+      "candidates": [
+        {
+          "recordId": "84c04631-3e29-46c1-9682-630e46262f39",
+          "title": "了不起的文明现场：跟着一线考古队长穿越历史",
+          "callNumber": "K87/4413",
+          "authors": [
+            "李零"
+          ],
+          "publishedYear": "2020"
+        }
+      ],
+      "historyFile": "data/history/b6.json"
+    },
+    {
+      "id": "b7",
       "title": "有趣的中国古建筑",
       "callNumber": "TU-092.2/4949",
       "recordId": "f10f4620-7dcb-4bd1-8dbc-24d1d612eba6",
@@ -90,10 +117,10 @@
       "publishedYear": null,
       "materialType": null,
       "candidates": [],
-      "historyFile": "data/history/b6.json"
+      "historyFile": "data/history/b7.json"
     },
     {
-      "id": "b7",
+      "id": "b8",
       "title": "穿墙透壁",
       "callNumber": "TU-092.2/4443",
       "recordId": "f0083989-efab-4371-811f-4509e522b09e",
@@ -105,12 +132,175 @@
       "publishedYear": null,
       "materialType": null,
       "candidates": [],
-      "historyFile": "data/history/b7.json"
+      "historyFile": "data/history/b8.json"
+    },
+    {
+      "id": "b9",
+      "title": "中国建筑史-1",
+      "callNumber": "TU-092/3965-20",
+      "recordId": "30315bca-6bab-4d3a-bcdf-4dbb83068d76",
+      "recordUrl": "https://vufind.library.sh.cn/Record/30315bca-6bab-4d3a-bcdf-4dbb83068d76",
+      "resolveStatus": "resolved",
+      "needsReview": false,
+      "authors": [
+        "梁思成"
+      ],
+      "publisher": "应急管理出版社",
+      "publishedYear": "2024",
+      "materialType": "图书",
+      "candidates": [
+        {
+          "recordId": "30315bca-6bab-4d3a-bcdf-4dbb83068d76",
+          "title": "中国建筑史",
+          "callNumber": "TU-092/3965-20",
+          "authors": [
+            "梁思成"
+          ],
+          "publishedYear": "2024"
+        }
+      ],
+      "historyFile": "data/history/b9.json"
+    },
+    {
+      "id": "b10",
+      "title": "中国建筑史-2",
+      "callNumber": "TU-092/3965-17",
+      "recordId": "c7ec5cf1-9e3d-46d8-8bd6-99e480b2d08e",
+      "recordUrl": "https://vufind.library.sh.cn/Record/c7ec5cf1-9e3d-46d8-8bd6-99e480b2d08e",
+      "resolveStatus": "resolved",
+      "needsReview": false,
+      "authors": [
+        "梁思成 1901-1972"
+      ],
+      "publisher": "华龄出版社",
+      "publishedYear": "2024",
+      "materialType": "图书",
+      "candidates": [
+        {
+          "recordId": "c7ec5cf1-9e3d-46d8-8bd6-99e480b2d08e",
+          "title": "中国建筑史",
+          "callNumber": "TU-092/3965-17",
+          "authors": [
+            "梁思成 1901-1972"
+          ],
+          "publishedYear": "2024"
+        }
+      ],
+      "historyFile": "data/history/b10.json"
+    },
+    {
+      "id": "b11",
+      "title": "中国建筑史-3",
+      "callNumber": "TU-092/3965-19",
+      "recordId": "b519b84f-5bb9-4fcb-8977-f0cb05020486",
+      "recordUrl": "https://vufind.library.sh.cn/Record/b519b84f-5bb9-4fcb-8977-f0cb05020486",
+      "resolveStatus": "resolved",
+      "needsReview": false,
+      "authors": [
+        "梁思成"
+      ],
+      "publisher": "上海古籍出版社",
+      "publishedYear": "2024",
+      "materialType": "图书",
+      "candidates": [
+        {
+          "recordId": "b519b84f-5bb9-4fcb-8977-f0cb05020486",
+          "title": "中国建筑史",
+          "callNumber": "TU-092/3965-19",
+          "authors": [
+            "梁思成"
+          ],
+          "publishedYear": "2024"
+        }
+      ],
+      "historyFile": "data/history/b11.json"
+    },
+    {
+      "id": "b12",
+      "title": "图说香港历史建筑",
+      "callNumber": "K928.716.58/4844",
+      "recordId": "fe33133a-53f6-49d6-90e7-ac5c355be513",
+      "recordUrl": "https://vufind.library.sh.cn/Record/fe33133a-53f6-49d6-90e7-ac5c355be513",
+      "resolveStatus": "resolved",
+      "needsReview": false,
+      "authors": [
+        "黄棣才"
+      ],
+      "publisher": "中华书局(香港)有限公司",
+      "publishedYear": "2012",
+      "materialType": "图书",
+      "candidates": [
+        {
+          "recordId": "fe33133a-53f6-49d6-90e7-ac5c355be513",
+          "title": "图说香港历史建筑：1841-1896 = Illustrating Hong Kong historical buildings：1841-1896",
+          "callNumber": "K928.716.58/4844",
+          "authors": [
+            "黄棣才"
+          ],
+          "publishedYear": "2012"
+        }
+      ],
+      "historyFile": "data/history/b12.json"
+    },
+    {
+      "id": "b13",
+      "title": "霓虹黯色：香港街道视觉文化记录",
+      "callNumber": "TU984.11/0449",
+      "recordId": "e4aeb2ea-bc6b-4af2-81f0-672e76c154ed",
+      "recordUrl": "https://vufind.library.sh.cn/Record/e4aeb2ea-bc6b-4af2-81f0-672e76c154ed",
+      "resolveStatus": "resolved",
+      "needsReview": false,
+      "authors": [
+        "郭斯恒"
+      ],
+      "publisher": "三联书店（香港）有限公司 2021重印",
+      "publishedYear": "2018 2021重印",
+      "materialType": "图书",
+      "candidates": [
+        {
+          "recordId": "e4aeb2ea-bc6b-4af2-81f0-672e76c154ed",
+          "title": "霓虹黯色：香港街道视觉文化记录",
+          "callNumber": "TU984.11/0449",
+          "authors": [
+            "郭斯恒"
+          ],
+          "publishedYear": "2018 2021重印"
+        }
+      ],
+      "historyFile": "data/history/b13.json"
+    },
+    {
+      "id": "b14",
+      "title": "香港文学散步",
+      "callNumber": "I267/9063-7",
+      "recordId": "81d620b6-f895-4efe-99a6-38c046b4dbdd",
+      "recordUrl": "https://vufind.library.sh.cn/Record/81d620b6-f895-4efe-99a6-38c046b4dbdd",
+      "resolveStatus": "resolved",
+      "needsReview": false,
+      "authors": [
+        "小思"
+      ],
+      "publisher": "上海译文出版社",
+      "publishedYear": "2015",
+      "materialType": "图书",
+      "candidates": [
+        {
+          "recordId": "81d620b6-f895-4efe-99a6-38c046b4dbdd",
+          "title": "香港文学散步 = A literary walk in Hong Kong",
+          "callNumber": "I267/9063-7",
+          "authors": [
+            "小思"
+          ],
+          "publishedYear": "2015"
+        }
+      ],
+      "historyFile": "data/history/b14.json"
     }
   ],
   "branches": [
     "上海图书馆网借中心",
     "上海图书馆（东馆）",
-    "上海图书馆（淮海路馆）"
+    "上海图书馆（淮海路馆）",
+    "奉贤区图书馆"
   ]
 }
