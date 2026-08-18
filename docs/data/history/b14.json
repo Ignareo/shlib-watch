@@ -2,7 +2,7 @@
   "bookId": "b14",
   "samples": [
     {
-      "ts": "2026-08-18T05:42:36.271Z",
+      "ts": "2026-08-18T07:32:20.114Z",
       "date": "2026-08-18",
       "weekday": 2,
       "error": null,
@@ -21,6 +21,8 @@
               "barcode": "54121109946228",
               "circulationType": "保存资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             },
             {
@@ -30,6 +32,8 @@
               "barcode": "54121109946229",
               "circulationType": "参考外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             }
           ]

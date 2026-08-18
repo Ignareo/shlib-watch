@@ -2,7 +2,7 @@
   "bookId": "b5",
   "samples": [
     {
-      "ts": "2026-08-18T05:42:36.271Z",
+      "ts": "2026-08-18T07:32:20.114Z",
       "date": "2026-08-18",
       "weekday": 2,
       "error": null,
@@ -21,6 +21,8 @@
               "barcode": "54121109735864",
               "circulationType": "保存资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             },
             {
@@ -30,6 +32,8 @@
               "barcode": "54121109735865",
               "circulationType": "参考外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             }
           ]
@@ -48,6 +52,8 @@
               "barcode": "54121110356836",
               "circulationType": "普通外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             },
             {
@@ -57,6 +63,8 @@
               "barcode": "54121111355767",
               "circulationType": "普通外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             }
           ]
@@ -75,6 +83,8 @@
               "barcode": "54121109735866",
               "circulationType": "普通外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             }
           ]

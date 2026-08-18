@@ -46,7 +46,7 @@
       }
     },
     {
-      "ts": "2026-08-18T05:42:36.271Z",
+      "ts": "2026-08-18T07:32:20.114Z",
       "date": "2026-08-18",
       "weekday": 2,
       "error": null,
@@ -65,6 +65,8 @@
               "barcode": "54121105406994",
               "circulationType": "仅供阅览资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "in_library"
             },
             {
@@ -73,7 +75,9 @@
               "callNumber": "TU-092.2/4443",
               "barcode": "54121105406997",
               "circulationType": "参考外借资料",
-              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "rawStatus": "已借出",
+              "itemId": "65525783-44a9-4871-946b-9002b4033006",
+              "dueDate": "2026-09-30",
               "availability": "unavailable"
             },
             {
@@ -83,6 +87,8 @@
               "barcode": "54121105406996",
               "circulationType": "保存资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             }
           ]

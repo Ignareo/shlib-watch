@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-18T05:42:36.271Z",
+  "updatedAt": "2026-08-18T07:32:20.114Z",
   "schedule": "每天",
   "books": [
     {
@@ -10,12 +10,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/fd0885cc-5591-4972-8383-5018044ca061",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
+      "authors": [
+        "兰小欢 出版社: 上海人民出版社"
+      ],
+      "publisher": "上海人民出版社",
+      "publishedYear": "2021",
+      "materialType": "图书",
       "candidates": [],
-      "historyFile": "data/history/b1.json"
+      "historyFile": "data/history/b1.json",
+      "group": "理解中国"
     },
     {
       "id": "b2",
@@ -28,22 +31,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/84197dc5-b7ce-422b-ba95-736eee9a0023",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
-      "candidates": [
-        {
-          "recordId": "2cbbd8fa-9bae-4e8f-b07e-4d13ac85534d",
-          "title": "营建的文明：中国传统文化与传统建筑",
-          "callNumber": "TU-092.2/4952-1",
-          "authors": [
-            "柳肃"
-          ],
-          "publishedYear": "2014"
-        }
+      "authors": [
+        "柳肃 出版社: 清华大学出版社"
       ],
-      "historyFile": "data/history/b2.json"
+      "publisher": "清华大学出版社",
+      "publishedYear": "2021",
+      "materialType": "图书",
+      "candidates": [],
+      "historyFile": "data/history/b2.json",
+      "group": "理解中国"
     },
     {
       "id": "b3",
@@ -53,12 +49,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/711c1471-c371-4e13-a091-99836d3dc88b",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
+      "authors": [
+        "陈圣来 出版社: 社会科学文献出版社"
+      ],
+      "publisher": "上海人民出版社",
+      "publishedYear": "2022",
+      "materialType": "图书",
       "candidates": [],
-      "historyFile": "data/history/b3.json"
+      "historyFile": "data/history/b3.json",
+      "group": "上海城市行走"
     },
     {
       "id": "b4",
@@ -69,23 +68,14 @@
       "resolveStatus": "resolved",
       "needsReview": false,
       "authors": [
-        "读史老张"
+        "黄向辉 (1967~) 出版社: 上海远东出版社"
       ],
       "publisher": "上海远东出版社",
       "publishedYear": "2024",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "9abd5b07-ee15-4db4-b418-c33ed146d2c5",
-          "title": "汉口路上",
-          "callNumber": "K295.1/3754",
-          "authors": [
-            "读史老张"
-          ],
-          "publishedYear": "2024"
-        }
-      ],
-      "historyFile": "data/history/b4.json"
+      "candidates": [],
+      "historyFile": "data/history/b4.json",
+      "group": "上海城市行走"
     },
     {
       "id": "b5",
@@ -95,12 +85,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/84c04631-3e29-46c1-9682-630e46262f39",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
+      "authors": [
+        "李零 出版社: 生活·读书·新知三联书店"
+      ],
+      "publisher": "生活·读书·新知三联书店",
+      "publishedYear": "2020",
+      "materialType": "图书",
       "candidates": [],
-      "historyFile": "data/history/b5.json"
+      "historyFile": "data/history/b5.json",
+      "group": "文明现场"
     },
     {
       "id": "b6",
@@ -110,12 +103,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/f10f4620-7dcb-4bd1-8dbc-24d1d612eba6",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
+      "authors": [
+        "王其钧 出版社: 机械工业出版社"
+      ],
+      "publisher": "湖南文艺出版社",
+      "publishedYear": "2024",
+      "materialType": "图书",
       "candidates": [],
-      "historyFile": "data/history/b6.json"
+      "historyFile": "data/history/b6.json",
+      "group": "古建筑"
     },
     {
       "id": "b7",
@@ -125,12 +121,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/f0083989-efab-4371-811f-4509e522b09e",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
+      "authors": [
+        "李乾朗 出版社: 北京日报出版社"
+      ],
+      "publisher": "广西师范大学出版社",
+      "publishedYear": "2009",
+      "materialType": "图书",
       "candidates": [],
-      "historyFile": "data/history/b7.json"
+      "historyFile": "data/history/b7.json",
+      "group": "古建筑"
     },
     {
       "id": "b8",
@@ -145,41 +144,14 @@
       "resolveStatus": "resolved",
       "needsReview": false,
       "authors": [
-        "梁思成"
+        "梁思成 (1901-1972) 出版社: 北方文艺出版社"
       ],
       "publisher": "应急管理出版社",
       "publishedYear": "2024",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "30315bca-6bab-4d3a-bcdf-4dbb83068d76",
-          "title": "中国建筑史",
-          "callNumber": "TU-092/3965-20",
-          "authors": [
-            "梁思成"
-          ],
-          "publishedYear": "2024"
-        },
-        {
-          "recordId": "c7ec5cf1-9e3d-46d8-8bd6-99e480b2d08e",
-          "title": "中国建筑史",
-          "callNumber": "TU-092/3965-17",
-          "authors": [
-            "梁思成 1901-1972"
-          ],
-          "publishedYear": "2024"
-        },
-        {
-          "recordId": "b519b84f-5bb9-4fcb-8977-f0cb05020486",
-          "title": "中国建筑史",
-          "callNumber": "TU-092/3965-19",
-          "authors": [
-            "梁思成"
-          ],
-          "publishedYear": "2024"
-        }
-      ],
-      "historyFile": "data/history/b8.json"
+      "candidates": [],
+      "historyFile": "data/history/b8.json",
+      "group": "古建筑"
     },
     {
       "id": "b9",
@@ -189,12 +161,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/fe33133a-53f6-49d6-90e7-ac5c355be513",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
+      "authors": [
+        "黄棣才 出版社: 中华书局(香港)有限公司"
+      ],
+      "publisher": "中华书局(香港)有限公司",
+      "publishedYear": "2012",
+      "materialType": "图书",
       "candidates": [],
-      "historyFile": "data/history/b9.json"
+      "historyFile": "data/history/b9.json",
+      "group": "古建筑"
     },
     {
       "id": "b10",
@@ -205,23 +180,14 @@
       "resolveStatus": "resolved",
       "needsReview": false,
       "authors": [
-        "铁合西街东 (2001-)"
+        "铁合西街东 (2001-) 出版社: 人民邮电出版社"
       ],
       "publisher": "人民邮电出版社",
       "publishedYear": "2025",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "dfb6cb5e-af19-477d-886d-173b81374593",
-          "title": "回望1999：千禧时代建筑印象",
-          "callNumber": "J429.3/8781",
-          "authors": [
-            "铁合西街东 (2001-)"
-          ],
-          "publishedYear": "2025"
-        }
-      ],
-      "historyFile": "data/history/b10.json"
+      "candidates": [],
+      "historyFile": "data/history/b10.json",
+      "group": "古建筑"
     },
     {
       "id": "b11",
@@ -231,12 +197,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/e4aeb2ea-bc6b-4af2-81f0-672e76c154ed",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
+      "authors": [
+        "麦克卢斯基 J., et al. 出版社: 中国建筑工业出版社"
+      ],
+      "publisher": "三联书店（香港）有限公司 2021重印",
+      "publishedYear": "2018",
+      "materialType": "图书",
       "candidates": [],
-      "historyFile": "data/history/b11.json"
+      "historyFile": "data/history/b11.json",
+      "group": "香港"
     },
     {
       "id": "b12",
@@ -246,12 +215,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/81d620b6-f895-4efe-99a6-38c046b4dbdd",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
+      "authors": [
+        "小思 出版社: 山东友谊出版社"
+      ],
+      "publisher": "上海译文出版社",
+      "publishedYear": "2015",
+      "materialType": "图书",
       "candidates": [],
-      "historyFile": "data/history/b12.json"
+      "historyFile": "data/history/b12.json",
+      "group": "香港"
     },
     {
       "id": "b13",
@@ -261,12 +233,15 @@
       "recordUrl": "https://vufind.library.sh.cn/Record/104b9970-13ec-444e-943e-c7ca619aeb6d",
       "resolveStatus": "resolved",
       "needsReview": false,
-      "authors": [],
-      "publisher": null,
-      "publishedYear": null,
-      "materialType": null,
+      "authors": [
+        "李健 出版社: 五洲传播出版社"
+      ],
+      "publisher": "五洲传播出版社",
+      "publishedYear": "2025",
+      "materialType": "图书",
       "candidates": [],
-      "historyFile": "data/history/b13.json"
+      "historyFile": "data/history/b13.json",
+      "group": "香港"
     },
     {
       "id": "b14",
@@ -277,25 +252,14 @@
       "resolveStatus": "resolved",
       "needsReview": false,
       "authors": [
-        "蒋明",
-        "柯世省"
+        "邱英雄, et al. 出版社: 浙江大学出版社"
       ],
       "publisher": "浙江大学出版社",
       "publishedYear": "2019",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "eacdd38c-0622-4bd5-bb6e-bb7a1b0fecfc",
-          "title": "浙江海岛植物原色图谱 = Color atlas of Zhejiang island plants",
-          "callNumber": "Q948.525.5-64/4160",
-          "authors": [
-            "蒋明",
-            "柯世省"
-          ],
-          "publishedYear": "2019"
-        }
-      ],
-      "historyFile": "data/history/b14.json"
+      "candidates": [],
+      "historyFile": "data/history/b14.json",
+      "group": "植物"
     }
   ],
   "branches": [

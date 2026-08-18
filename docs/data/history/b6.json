@@ -109,7 +109,7 @@
       }
     },
     {
-      "ts": "2026-08-18T05:42:36.271Z",
+      "ts": "2026-08-18T07:32:20.114Z",
       "date": "2026-08-18",
       "weekday": 2,
       "error": null,
@@ -128,6 +128,8 @@
               "barcode": "54121111461156",
               "circulationType": "普通外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             },
             {
@@ -136,7 +138,9 @@
               "callNumber": "TU-092.2/4949",
               "barcode": "54121111843796",
               "circulationType": "普通外借资料",
-              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "rawStatus": "已借出",
+              "itemId": "a3912a46-d400-4f43-a952-5469ccd19823",
+              "dueDate": "2026-09-10",
               "availability": "unavailable"
             },
             {
@@ -146,6 +150,8 @@
               "barcode": "54121111924025",
               "circulationType": "普通外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             },
             {
@@ -155,6 +161,8 @@
               "barcode": "54121111617231",
               "circulationType": "保存资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             },
             {
@@ -163,7 +171,9 @@
               "callNumber": "TU-092.2/4949",
               "barcode": "54121111617232",
               "circulationType": "参考外借资料",
-              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "rawStatus": "已借出",
+              "itemId": "eb925c7e-b365-4b3d-a1a0-a503e92a12fb",
+              "dueDate": "2026-10-03",
               "availability": "unavailable"
             }
           ]
@@ -181,7 +191,9 @@
               "callNumber": "TU-092.2/4949",
               "barcode": "54121111617233",
               "circulationType": "普通外借资料",
-              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "rawStatus": "已借出",
+              "itemId": "11127ed6-292e-4f8b-943b-728850a029e8",
+              "dueDate": "2026-09-05",
               "availability": "unavailable"
             },
             {
@@ -191,6 +203,8 @@
               "barcode": "54121111797707",
               "circulationType": "普通外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             },
             {
@@ -200,6 +214,8 @@
               "barcode": "54121180565534",
               "circulationType": "少儿外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             },
             {
@@ -209,6 +225,8 @@
               "barcode": "54121180565535",
               "circulationType": "少儿外借资料",
               "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
               "availability": "available"
             }
           ]
