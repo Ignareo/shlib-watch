@@ -46,32 +46,23 @@
       }
     },
     {
-      "ts": "2026-08-18T05:31:58.919Z",
+      "ts": "2026-08-18T05:42:36.271Z",
       "date": "2026-08-18",
       "weekday": 2,
       "error": null,
       "branches": {
         "上海图书馆（淮海路馆）": {
-          "total": 3,
-          "available": 3,
+          "total": 2,
+          "available": 1,
           "inLibrary": 0,
-          "unavailable": 0,
+          "unavailable": 1,
           "unknown": 0,
           "copies": [
             {
               "branch": "上海图书馆（淮海路馆）",
               "location": "上海图书馆保存本书库",
-              "callNumber": "TU-092.2/4952-1",
-              "barcode": "54121107167138",
-              "circulationType": "保存资料",
-              "rawStatus": "已归还",
-              "availability": "available"
-            },
-            {
-              "branch": "上海图书馆（淮海路馆）",
-              "location": "上海图书馆航头书库",
-              "callNumber": "TU-092.2/4952-1",
-              "barcode": "54121107167139",
+              "callNumber": "I209.951/4122",
+              "barcode": "54121110907544",
               "circulationType": "保存资料",
               "rawStatus": "已归还",
               "availability": "available"
@@ -79,11 +70,47 @@
             {
               "branch": "上海图书馆（淮海路馆）",
               "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
-              "callNumber": "TU-092.2/4952-1",
-              "barcode": "54121107167140",
+              "callNumber": "I209.951/4122",
+              "barcode": "54121110907545",
               "circulationType": "参考外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            }
+          ]
+        },
+        "上海图书馆（东馆）": {
+          "total": 3,
+          "available": 0,
+          "inLibrary": 1,
+          "unavailable": 2,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "I209.951/4122",
+              "barcode": "54121110924284",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "I209.951/4122",
+              "barcode": "54121111746506",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆地方文献馆 - 4楼",
+              "callNumber": "I209.951/4122",
+              "barcode": "54121110925160",
+              "circulationType": "仅供阅览资料",
               "rawStatus": "已归还",
-              "availability": "available"
+              "availability": "in_library"
             }
           ]
         }

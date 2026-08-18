@@ -64,7 +64,7 @@
       }
     },
     {
-      "ts": "2026-08-18T05:31:58.919Z",
+      "ts": "2026-08-18T05:42:36.271Z",
       "date": "2026-08-18",
       "weekday": 2,
       "error": null,
@@ -79,8 +79,8 @@
             {
               "branch": "上海图书馆（淮海路馆）",
               "location": "上海图书馆保存本书库",
-              "callNumber": "K296.58-64/4422",
-              "barcode": "54121111890117",
+              "callNumber": "K87/4413",
+              "barcode": "54121109735864",
               "circulationType": "保存资料",
               "rawStatus": "已归还",
               "availability": "available"
@@ -88,8 +88,8 @@
             {
               "branch": "上海图书馆（淮海路馆）",
               "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
-              "callNumber": "K296.58-64/4422",
-              "barcode": "54121111890118",
+              "callNumber": "K87/4413",
+              "barcode": "54121109735865",
               "circulationType": "参考外借资料",
               "rawStatus": "已归还",
               "availability": "available"
@@ -106,8 +106,8 @@
             {
               "branch": "上海图书馆（东馆）",
               "location": "上海图书馆东馆阅读广场 - 3楼",
-              "callNumber": "K296.58-64/4422",
-              "barcode": "54121111890119",
+              "callNumber": "K87/4413",
+              "barcode": "54121110356836",
               "circulationType": "普通外借资料",
               "rawStatus": "已归还",
               "availability": "available"
@@ -115,8 +115,26 @@
             {
               "branch": "上海图书馆（东馆）",
               "location": "上海图书馆东馆阅读广场 - 3楼",
-              "callNumber": "K296.58-64/4422",
-              "barcode": "54121112145199",
+              "callNumber": "K87/4413",
+              "barcode": "54121111355767",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已归还",
+              "availability": "available"
+            }
+          ]
+        },
+        "上海图书馆网借中心": {
+          "total": 1,
+          "available": 1,
+          "inLibrary": 0,
+          "unavailable": 0,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "K87/4413",
+              "barcode": "54121109735866",
               "circulationType": "普通外借资料",
               "rawStatus": "已归还",
               "availability": "available"

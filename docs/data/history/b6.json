@@ -109,23 +109,50 @@
       }
     },
     {
-      "ts": "2026-08-18T05:31:58.919Z",
+      "ts": "2026-08-18T05:42:36.271Z",
       "date": "2026-08-18",
       "weekday": 2,
       "error": null,
       "branches": {
         "上海图书馆（淮海路馆）": {
-          "total": 2,
-          "available": 2,
+          "total": 5,
+          "available": 3,
           "inLibrary": 0,
-          "unavailable": 0,
+          "unavailable": 2,
           "unknown": 0,
           "copies": [
             {
               "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111461156",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已归还",
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111843796",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111924025",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已归还",
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
               "location": "上海图书馆保存本书库",
-              "callNumber": "K87/4413",
-              "barcode": "54121109735864",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111617231",
               "circulationType": "保存资料",
               "rawStatus": "已归还",
               "availability": "available"
@@ -133,54 +160,54 @@
             {
               "branch": "上海图书馆（淮海路馆）",
               "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
-              "callNumber": "K87/4413",
-              "barcode": "54121109735865",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111617232",
               "circulationType": "参考外借资料",
-              "rawStatus": "已归还",
-              "availability": "available"
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
             }
           ]
         },
         "上海图书馆（东馆）": {
-          "total": 2,
-          "available": 2,
+          "total": 4,
+          "available": 3,
           "inLibrary": 0,
-          "unavailable": 0,
+          "unavailable": 1,
           "unknown": 0,
           "copies": [
             {
               "branch": "上海图书馆（东馆）",
               "location": "上海图书馆东馆阅读广场 - 3楼",
-              "callNumber": "K87/4413",
-              "barcode": "54121110356836",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111617233",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111797707",
               "circulationType": "普通外借资料",
               "rawStatus": "已归还",
               "availability": "available"
             },
             {
               "branch": "上海图书馆（东馆）",
-              "location": "上海图书馆东馆阅读广场 - 3楼",
-              "callNumber": "K87/4413",
-              "barcode": "54121111355767",
-              "circulationType": "普通外借资料",
+              "location": "上海图书馆东馆少儿借阅区 - 1楼",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121180565534",
+              "circulationType": "少儿外借资料",
               "rawStatus": "已归还",
               "availability": "available"
-            }
-          ]
-        },
-        "上海图书馆网借中心": {
-          "total": 1,
-          "available": 1,
-          "inLibrary": 0,
-          "unavailable": 0,
-          "unknown": 0,
-          "copies": [
+            },
             {
-              "branch": "上海图书馆网借中心",
-              "location": "上海图书馆享借中心享借库",
-              "callNumber": "K87/4413",
-              "barcode": "54121109735866",
-              "circulationType": "普通外借资料",
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆少儿借阅区 - 1楼",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121180565535",
+              "circulationType": "少儿外借资料",
               "rawStatus": "已归还",
               "availability": "available"
             }
