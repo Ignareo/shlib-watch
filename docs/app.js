@@ -5,7 +5,8 @@
 const state = {
   index: null,          // docs/data/index.json
   histories: {},        // bookId -> history json
-  filter: "全部",       // 书卡筛选：全部 / 可以外借 / 仅馆内浏览
+  filter: "全部",       // 书卡筛选：全部 / 可以外借 / 全部借出 / 仅馆内阅览
+  tag: null,            // 标签筛选：null 为不限；书单里有 tags 时筛选条才出现标签 chips
   demo: false,
   localServer: false,   // 是否由 server.js 托管（决定刷新按钮行为）
   charts: [],           // echarts 实例，重绘前销毁
@@ -125,9 +126,27 @@ function showEmptyState() {
 }
 
 // ---------------- 统计计算 ----------------
-// 观测口径固定为主馆：淮海路馆 + 东馆（无匹配时退化为全部分馆）
+// 观测口径：用户可在筛选条旁勾选分馆（偏好存 localStorage，键 branch-prefs，值为分馆名数组）；
+// 无偏好或偏好为空时回落默认口径——淮海路馆 + 东馆；默认口径无匹配则返回 null（= 全部分馆）
+const BRANCH_PREFS_KEY = "branch-prefs";
+
+function branchPrefs() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(BRANCH_PREFS_KEY) ?? "null");
+    return Array.isArray(arr) ? arr.filter((n) => typeof n === "string") : null;
+  } catch {
+    return null; // 隐私模式 / 数据损坏时按无偏好处理
+  }
+}
+
 function mainBranches() {
   const all = state.index?.branches ?? [];
+  const prefs = branchPrefs();
+  if (prefs?.length) {
+    // 只认当前 index.json 里仍存在的分馆，避免历史偏好里的消失分馆污染口径
+    const chosen = all.filter((n) => prefs.includes(n));
+    if (chosen.length) return chosen;
+  }
   const main = [...all.filter((n) => n.includes("淮海路")), ...all.filter((n) => n.includes("东馆"))];
   return main.length ? main : null;
 }
@@ -215,17 +234,37 @@ function computeStats(bookId) {
   const weekdayRate = rateOf(weekdayRows);
   const weekendRate = rateOf(weekendRows);
 
-  // 难借分：在架率 80 + 周末落差 20
-  const gap = weekdayRate !== null && weekendRate !== null ? Math.max(0, weekdayRate - weekendRate) : 0;
-  const score = Math.round(Math.min(100, (1 - rate) * 80 + gap * 20));
+  // ---------------- 难借分新口径（0–100，越高越难借） ----------------
+  // 1) 周末落差：周末样本 <5 次时噪声太大，整个维度剔除，权重全部让给在架率（即在架率独占 100 分）；
+  //    周末样本 ≥5 次时才启用「在架率 80 + 周末落差 20」的旧结构
+  const useWeekend = weekendRows.length >= 5 && weekdayRate !== null && weekendRate !== null;
+  const gap = useWeekend ? Math.max(0, weekdayRate - weekendRate) : 0;
+
+  // 2) 副本基数折减：1 册在架率 100% ≠ 10 册 100%。册数越少，单册被借走对在架率的冲击越大，
+  //    同样的在架率对读者越不可靠（到馆越可能扑空），故按平均普通外借册数对「有书可借率」分档折减：
+  //    约 1 册 ×0.6 / 约 2 册 ×0.8 / 3–4 册 ×0.9 / ≥5 册 ×1.0（系数随册数单调不减，阈值取半档避免整数抖动）
+  const avgCopies = rows.reduce((a, r) => a + r.total, 0) / n;
+  const copyFactor = avgCopies < 1.5 ? 0.6 : avgCopies < 2.5 ? 0.8 : avgCopies < 4.5 ? 0.9 : 1;
+  const rateAdj = rate * copyFactor;
+
+  // 3) 连续无书信号：最新连续「普通外借 0 册在架」的采样天数按档加分（在架率是平均值，
+  //    捕捉不到「此刻正连续借空」的紧迫状态）：连续 ≥3 天 +5 / ≥7 天 +10 / ≥14 天 +20；总分封顶 100
+  let streak = 0;
+  for (let i = rows.length - 1; i >= 0 && rows[i].available === 0; i--) streak++;
+  const streakBonus = streak >= 14 ? 20 : streak >= 7 ? 10 : streak >= 3 ? 5 : 0;
+
+  const score = Math.round(Math.min(100, (1 - rateAdj) * (useWeekend ? 80 : 100) + gap * 20 + streakBonus));
 
   return {
     samples: n, rate, weekdayRate, weekendRate, score,
+    avgCopies: Math.round(avgCopies * 10) / 10, // 平均普通外借册数（折减依据，展示/调试可用）
+    streak,                                     // 最新连续无书天数（加分依据）
     latest: rows.at(-1),
     rows,
   };
 }
 
+// 三档评级：新公式仍是 0–100 同一量纲（折减只影响低册数书、加分封顶不破 100），阈值 35/65 维持不变
 function ratingOf(score, samples) {
   if (samples < 3) return { text: "数据积累中", cls: "na" };
   if (score < 35) return { text: "随手可借", cls: "easy" };
@@ -244,11 +283,55 @@ function latestCounts(bookId) {
   return null;
 }
 
-// 按当前可借状态分组："available" 现在可外借 / "inhouse" 仅馆内浏览 / "nodata" 无数据
+// 按当前可借状态分组（口径同难借分，均为普通外借册）：
+// "available" 现在可外借 / "borrowed_out" 普通外借册全部借出（可蹲点，过段时间可能有）
+// "inhouse" 仅馆内阅览（馆藏均为保存/参考/阅览类，永远借不出） / "nodata" 无数据
 function availabilityGroup(bookId) {
   const latest = latestCounts(bookId);
   if (!latest) return "nodata";
-  return latest.total > 0 && latest.available >= 1 ? "available" : "inhouse";
+  if (latest.total <= 0) return "inhouse"; // 有采样但该口径下没有任何普通外借册
+  return latest.available >= 1 ? "available" : "borrowed_out";
+}
+
+// ---------------- 「新可借」高亮 ----------------
+// localStorage 记录上次访问时各书的分组；本次加载后从「非 available」变为「available」的书
+// 在顶部看板 chip 和书卡上加「新可借」标记。demo 模式不写不读。
+const LAST_AVAIL_KEY = "last-availability";
+const LAST_AVAIL_TTL = 30 * 86400_000; // 超过 30 天未访问不提示，避免刷屏
+let currentGroups = null;       // 本会话当前分组（数据刷新后作为下一次对比基准）
+let newlyAvailable = new Set(); // 本次「新可借」的书 id
+
+function trackAvailability() {
+  const groups = {};
+  for (const book of state.index.books) groups[book.id] = availabilityGroup(book.id);
+  if (state.demo) {
+    newlyAvailable = new Set();
+    return;
+  }
+  // 分组无变化（如切换筛选触发的重绘）时保留已有高亮，不重复对比
+  if (currentGroups && Object.keys(groups).every((id) => currentGroups[id] === groups[id])) return;
+  // 对比基准：本会话上一次分组（数据刷新场景）优先，否则读 localStorage 的上次访问记录
+  let baseline = currentGroups ? { ts: Date.now(), groups: currentGroups } : null;
+  if (!baseline) {
+    try {
+      baseline = JSON.parse(localStorage.getItem(LAST_AVAIL_KEY) ?? "null");
+    } catch {
+      baseline = null;
+    }
+  }
+  newlyAvailable = new Set();
+  if (baseline && Date.now() - (baseline.ts ?? 0) <= LAST_AVAIL_TTL) {
+    for (const [id, g] of Object.entries(groups)) {
+      const before = baseline.groups?.[id];
+      if (before && before !== "available" && g === "available") newlyAvailable.add(id);
+    }
+  }
+  currentGroups = groups;
+  try {
+    localStorage.setItem(LAST_AVAIL_KEY, JSON.stringify({ ts: Date.now(), groups }));
+  } catch {
+    /* 隐私模式等写不进去的场景直接忽略 */
+  }
 }
 
 function allDates() {
@@ -271,11 +354,61 @@ function render() {
   $("#footer-schedule").textContent = `采样周期：${index.schedule ?? "见 config.json"}`;
   $("#demo-banner").hidden = !state.demo;
 
+  trackAvailability(); // 每次渲染前更新「新可借」标记（分组无变化时内部直接返回）
+  renderBranchPrefs();
   renderFilterBar();
   renderOverview();
   renderAvailability();
   renderBooks();
   renderHistoryPanel();
+}
+
+// 观测口径选择：从 index.json 的 branches 全量列表生成 chips，勾选哪些馆计入统计
+// （顶部可借分组、书卡在架数、难借分、图表全链路都走 mainBranches()，改口径后自动跟随）。
+// 偏好存 localStorage（branch-prefs，分馆名数组）；demo 模式同样可用（用 demo 数据的 branches）。
+function renderBranchPrefs() {
+  const box = $("#branch-prefs");
+  if (!box) return;
+  const all = state.index?.branches ?? [];
+  if (!all.length) {
+    box.hidden = true;
+    return;
+  }
+  box.hidden = false;
+  const effective = new Set(mainBranches() ?? all); // 当前生效口径；null（=全部分馆）时全部点亮
+  box.innerHTML =
+    `<span class="branch-prefs-label" title="勾选哪些分馆计入在架率 / 难借分 / 可借分组统计">观测口径：</span>` +
+    all
+      .map(
+        (name) =>
+          `<button class="branch-pill ${effective.has(name) ? "active" : ""}" data-branch="${escapeHtml(name)}">${escapeHtml(shortBranchName(name))}</button>`
+      )
+      .join("") +
+    `<button class="btn-subtle" id="btn-branch-reset" title="清除本地偏好，恢复默认口径（淮海路馆＋东馆）">恢复默认</button>`;
+  box.querySelectorAll(".branch-pill").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const next = new Set(mainBranches() ?? all);
+      const name = btn.dataset.branch;
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      try {
+        // 全部取消勾选 = 清空偏好，回落默认口径（避免「一个馆都不选」的空口径）
+        if (next.size) localStorage.setItem(BRANCH_PREFS_KEY, JSON.stringify([...next]));
+        else localStorage.removeItem(BRANCH_PREFS_KEY);
+      } catch {
+        /* 隐私模式写不进去时仅本次会话生效 */
+      }
+      render();
+    });
+  });
+  $("#btn-branch-reset")?.addEventListener("click", () => {
+    try {
+      localStorage.removeItem(BRANCH_PREFS_KEY);
+    } catch {
+      /* 同上 */
+    }
+    render();
+  });
 }
 
 function formatTs(iso) {
@@ -284,11 +417,12 @@ function formatTs(iso) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-// 筛选 pills：按当前可借状态过滤书卡（分馆口径固定为淮海路馆+东馆）
+// 筛选 pills：按当前可借状态过滤书卡（分馆口径见 mainBranches()，可在分馆偏好中调整）
+// 书单里有 tags 时追加标签 chips，与状态 pills 叠加过滤（再点选中的标签可取消）
 function renderFilterBar() {
   const bar = $("#branch-bar");
   bar.hidden = false;
-  const filters = ["全部", "可以外借", "仅馆内浏览"];
+  const filters = ["全部", "可以外借", "全部借出", "仅馆内阅览"];
   $("#branch-pills").innerHTML = filters
     .map((f) => `<button class="branch-pill ${f === state.filter ? "active" : ""}" data-filter="${f}">${f}</button>`)
     .join("");
@@ -298,20 +432,42 @@ function renderFilterBar() {
       render();
     });
   });
+
+  const allTags = [...new Set((state.index?.books ?? []).flatMap((b) => b.tags ?? []))];
+  const tagBox = $("#tag-chips");
+  if (!allTags.length) {
+    tagBox.hidden = true;
+    tagBox.innerHTML = "";
+    state.tag = null;
+    return;
+  }
+  if (state.tag && !allTags.includes(state.tag)) state.tag = null; // 书单里已没有该标签
+  tagBox.hidden = false;
+  tagBox.innerHTML = `<span class="tag-chips-label">标签：</span>` + allTags
+    .map((t) => `<button class="tag-chip ${t === state.tag ? "active" : ""}" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>`)
+    .join("");
+  tagBox.querySelectorAll(".tag-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.tag = state.tag === btn.dataset.tag ? null : btn.dataset.tag;
+      render();
+    });
+  });
 }
 
-// 顶部「当前可借情况」：按最新一次采样（普通外借口径）分两组展示
+// 顶部「当前可借情况」：按最新一次采样（普通外借口径）分三组展示
 function renderAvailability() {
   const board = $("#avail-board");
   board.hidden = false;
-  const groups = { available: [], inhouse: [], nodata: [] };
+  const groups = { available: [], borrowed_out: [], inhouse: [], nodata: [] };
   for (const book of state.index.books) {
     groups[availabilityGroup(book.id)].push(book);
   }
   const chip = (book, cls) =>
-    `<button class="chip ${cls}" data-book="${escapeHtml(book.id)}" title="定位到书卡">${escapeHtml(book.title)}</button>`;
+    `<button class="chip ${cls}" data-book="${escapeHtml(book.id)}" title="定位到书卡">${escapeHtml(book.title)}${newlyAvailable.has(book.id) ? `<span class="new-badge">新可借</span>` : ""}</button>`;
   $("#chips-available").innerHTML =
     groups.available.map((b) => chip(b, "ok")).join("") || `<span class="chips-empty">无</span>`;
+  $("#chips-borrowed").innerHTML =
+    groups.borrowed_out.map((b) => chip(b, "warn")).join("") || `<span class="chips-empty">无</span>`;
   $("#chips-inhouse").innerHTML =
     groups.inhouse.map((b) => chip(b, "muted")).join("") || `<span class="chips-empty">无</span>`;
   $("#avail-note").textContent = groups.nodata.length
@@ -340,7 +496,7 @@ function renderOverview() {
   $("#stats-band").hidden = false;
   $("#stat-books").innerHTML = `${books.length} <small>本</small>`;
   $("#stat-available").innerHTML = `${availableNow} <small>/ ${measurable.length} 本</small>`;
-  $("#stat-score").textContent = avgScore ?? "—";
+  $("#stat-score").innerHTML = avgScore !== null ? String(avgScore) : `<small>数据积累中</small>`;
   $("#stat-days").innerHTML = `${dates.length} <small>天</small>`;
 }
 
@@ -358,13 +514,32 @@ function renderBooks() {
   }));
   const visible = items.filter(
     (x) =>
-      state.filter === "全部" ||
-      (state.filter === "可以外借" && x.group === "available") ||
-      (state.filter === "仅馆内浏览" && x.group === "inhouse")
+      (!state.tag || (x.book.tags ?? []).includes(state.tag)) &&
+      (state.filter === "全部" ||
+        (state.filter === "可以外借" && x.group === "available") ||
+        (state.filter === "全部借出" && x.group === "borrowed_out") ||
+        (state.filter === "仅馆内阅览" && x.group === "inhouse"))
   );
 
-  for (const { book, stats } of visible) {
-    list.appendChild(buildBookCard(book, stats));
+  // 按书单分组（group 字段）分节，保持书单原顺序；无分组的书归入默认节
+  // 全部书都无分组（旧数据）时不渲染节标题，与旧版展示一致
+  const hasGroups = visible.some((x) => x.book.group);
+  const sections = new Map(); // group|null -> items（Map 保持插入顺序）
+  for (const x of visible) {
+    const g = x.book.group || null;
+    if (!sections.has(g)) sections.set(g, []);
+    sections.get(g).push(x);
+  }
+  for (const [groupName, sectionItems] of sections) {
+    if (hasGroups) {
+      const h = document.createElement("h2");
+      h.className = "group-title";
+      h.textContent = groupName ?? "其他";
+      list.appendChild(h);
+    }
+    for (const { book, stats } of sectionItems) {
+      list.appendChild(buildBookCard(book, stats));
+    }
   }
 
   // 初始化图表（需要 DOM 已挂载）
@@ -395,6 +570,8 @@ function buildBookCard(book, stats) {
     book.authors?.length ? escapeHtml(book.authors.join("，")) : null,
     [book.publisher, book.publishedYear].filter(Boolean).map(escapeHtml).join(" ") || null,
     book.materialType ? escapeHtml(book.materialType) : null,
+    // 书单标签（books.txt 第四列）：小徽章展示
+    book.tags?.length ? book.tags.map((t) => `<span class="book-tag">${escapeHtml(t)}</span>`).join("") : null,
     book.needsReview ? `<span class="review-flag" title="${escapeHtml(candidatesTitle(book))}">版本待核对</span>` : null,
   ].filter(Boolean);
 
@@ -412,13 +589,14 @@ function buildBookCard(book, stats) {
   } else {
     // latest：普通外借口径的最新汇总（noOrdinary 时来自 latestCounts）
     const latest = stats.latest;
+    // 文案区分「今天没了，可蹲点」（borrowed_out）和「只能去馆里看」（inhouse）
     const statusHtml = noOrdinary
-      ? `<span class="v">仅馆内阅览 —— 馆藏均为保存 / 参考 / 阅览类资料，无可外借普通册</span>`
+      ? `<span class="v">仅馆内阅览 —— 只能去馆里看，馆藏均为保存 / 参考 / 阅览类资料，不可外借</span>`
       : latest.available >= 1
         ? `<span class="v ok">当前可借（普通外借在架 ${latest.available}/${latest.total} 册）</span>`
         : latest.inLibrary >= 1
-          ? `<span class="v">当前普通外借册全部借出，另有 ${latest.inLibrary} 册仅馆内阅览</span>`
-          : `<span class="v bad">当前全部借出（0/${latest.total} 册普通外借在架）</span>`;
+          ? `<span class="v">今天借完了（0/${latest.total} 册普通外借在架），可蹲点；另有 ${latest.inLibrary} 册仅馆内阅览</span>`
+          : `<span class="v bad">今天借完了（0/${latest.total} 册普通外借在架），可蹲点</span>`;
 
     let statsHtml;
     if (!noOrdinary) {
@@ -437,9 +615,11 @@ function buildBookCard(book, stats) {
     }
 
     bodyHtml = `
+      ${actionLineHtml(book)}
       ${branchRowsHtml(book)}
       ${circulationHtml(latest)}
-      ${statsHtml}`;
+      ${statsHtml}
+      ${!noOrdinary && stats.samples < 3 ? warmupRowHtml(stats) : ""}`;
   }
 
   card.innerHTML = `
@@ -448,18 +628,84 @@ function buildBookCard(book, stats) {
         ${scoreHtml}
         <span class="score-badge ${rating.cls}">${rating.text}</span>
         <div class="score-meter"><i style="width:${stats && !noOrdinary && stats.samples >= 3 ? stats.score : 0}%"></i></div>
-        <div class="score-caption">难借分越高越难借<br>按普通外借册：在架率 80% · 周末落差 20%</div>
+        <div class="score-caption">难借分越高越难借<br>按普通外借册：在架率（按册数折减）· 周末落差（样本≥5 才计）· 连续借空加分</div>
       </div>
     </div>
     <div>
-      <h3 class="book-title">${titleHtml}</h3>
+      <h3 class="book-title">${titleHtml}${newlyAvailable.has(book.id) ? `<span class="new-badge">新可借</span>` : ""}</h3>
       <div class="book-meta">${metaBits.join("")}</div>
       ${bodyHtml}
     </div>`;
   return card;
 }
 
-// 分馆小表：主馆（淮海路/东馆）平铺，其余分馆折叠；无数据显示「无数据」
+// 书卡顶部一行行动建议：按优先级取第一条命中
+// 1. 主馆有可借（精确到馆藏位置）→ 2. 网借中心可约 → 3. 全部借出（有 dueDate 给最早归还日）→ 4. 仅馆内阅览
+function actionLineHtml(book) {
+  const sample = bookSamples(book.id).at(-1);
+  if (!sample) return "";
+  const branches = sample.branches ?? {};
+  const names = Object.keys(branches);
+  const main = mainBranches() ?? names;
+  // 某馆普通外借在架册列表（无册级明细的旧数据用分馆聚合值兜底）
+  const availableCopiesAt = (name) => {
+    const b = branches[name];
+    if (!b) return [];
+    const copies = Array.isArray(b.copies) ? b.copies : [];
+    if (!copies.length) return (b.available ?? 0) >= 1 ? [{}] : [];
+    return copies.filter((c) => bucketOf(c.circulationType) === "normal" && c.availability === "available");
+  };
+
+  // 1. 主馆有可借：多个馆都有时逐馆分行列出
+  const spots = main
+    .map((name) => {
+      const ok = availableCopiesAt(name);
+      if (!ok.length) return null;
+      const locs = [...new Set(ok.map((c) => c.location).filter(Boolean))];
+      const locText = locs.length ? `（${locs.map(escapeHtml).join("；")}）` : "";
+      return `${escapeHtml(shortBranchName(name))} ${ok.length} 册在架${locText}`;
+    })
+    .filter(Boolean);
+  if (spots.length)
+    return spots.map((s) => `<div class="action-line ok">${s}</div>`).join("");
+
+  // 2. 网借中心有可借：线上下单送书，对读者最友好的渠道
+  if (names.some((n) => n.includes("网借中心") && availableCopiesAt(n).length)) {
+    return `<div class="action-line">📦 网借中心可约，支持线上下单送书</div>`;
+  }
+
+  const group = availabilityGroup(book.id);
+  // 3. 全部借出：copy 级 dueDate 为 sampler 侧契约（"YYYY-MM-DD" 或 null），缺失时降级为「全部借出」
+  if (group === "borrowed_out") {
+    const dues = [];
+    for (const name of names) {
+      for (const c of branches[name]?.copies ?? []) {
+        if (bucketOf(c.circulationType) !== "normal" || typeof c.dueDate !== "string") continue;
+        const m = c.dueDate.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (m) dues.push({ key: `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`, text: `${+m[2]}月${+m[3]}日` });
+      }
+    }
+    dues.sort((a, b) => a.key.localeCompare(b.key));
+    return dues.length
+      ? `<div class="action-line warn">⏳ 全部借出，最早预计 ${dues[0].text} 归还</div>`
+      : `<div class="action-line warn">⏳ 全部借出</div>`;
+  }
+  // 4. 仅馆内阅览
+  if (group === "inhouse") return `<div class="action-line muted">🏛 仅馆内阅览，不可外借</div>`;
+  return "";
+}
+
+// 冷启动期兜底：采样未满 3 次不出难借分，但展示已有信息（采样天数 / 较上次的在架册数变化）
+function warmupRowHtml(stats) {
+  const parts = [`已采样 ${stats.samples} 天，满 3 次后出难借分`];
+  if (stats.rows.length >= 2) {
+    const delta = stats.rows.at(-1).available - stats.rows.at(-2).available;
+    parts.push(delta === 0 ? "在架册数与上次持平" : `较上次 ${delta > 0 ? "+" : ""}${delta} 册在架`);
+  }
+  return `<div class="kv-row"><span class="k">积累中</span><span class="v">${parts.join("；")}</span></div>`;
+}
+
+// 分馆小表：口径内分馆（mainBranches，默认淮海路/东馆）与网借中心平铺（网借支持线上下单，单独提级），其余分馆折叠；无数据显示「无数据」
 function branchRowsHtml(book) {
   const samples = bookSamples(book.id);
   const latestSample = samples.at(-1) ?? null;
@@ -482,11 +728,13 @@ function branchRowsHtml(book) {
 
   const all = state.index.branches ?? [];
   const main = mainBranches() ?? all;
-  const others = all.filter((n) => !main.includes(n));
+  const online = all.filter((n) => !main.includes(n) && n.includes("网借中心"));
+  const others = all.filter((n) => !main.includes(n) && !n.includes("网借中心"));
 
   return `
     <div class="branch-rows">
       ${main.map(rowHtml).join("")}
+      ${online.map(rowHtml).join("")}
       ${others.length ? `<details class="branch-more"><summary>展开其他分馆（${others.length}）</summary>${others.map(rowHtml).join("")}</details>` : ""}
     </div>`;
 }
@@ -683,6 +931,7 @@ function setupHistoryPanel() {
     downloadText("prune.json", json);
     toast("已下载 —— 放到仓库 docs/data/ 目录并提交");
   });
+  $("#btn-export-csv").addEventListener("click", exportCsv);
 }
 
 function setAllChecks(checked) {
@@ -702,6 +951,55 @@ function downloadText(filename, text, type = "application/json") {
   URL.revokeObjectURL(url);
 }
 
+// ---------------- 数据导出 CSV ----------------
+// CSV 单元格转义：含逗号/引号/换行时加引号，内部引号双写
+function csvCell(value) {
+  const s = String(value ?? "");
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+// 导出粒度：书 × 分馆 × 采样日期，导出全部历史（与 prune 勾选无关）、全部分馆（不按主馆口径过滤）
+// 无册级明细的旧数据由 sampleCounts 用分馆聚合值兜底（全部视为普通外借）；错误样本由 bookSamples 剔除
+function buildCsvRows() {
+  const rows = [];
+  for (const book of state.index?.books ?? []) {
+    const callNumber = callNumberText(book, "; ");
+    const samples = bookSamples(book.id).slice().sort((a, b) => a.date.localeCompare(b.date));
+    for (const s of samples) {
+      for (const branch of Object.keys(s.branches ?? {}).sort()) {
+        const c = sampleCounts(s, [branch]);
+        if (!c) continue;
+        rows.push([
+          s.date,
+          WEEK_NAMES[s.weekday] ?? "",
+          book.title,
+          callNumber,
+          branch,
+          c.available,
+          c.total,
+          c.ref,
+          c.keep,
+          c.total > 0 ? Math.round((c.available / c.total) * 100) : "",
+        ]);
+      }
+    }
+  }
+  return rows;
+}
+
+function buildCsvText() {
+  const header = ["日期", "星期", "书名", "索书号", "分馆", "普通外借在架", "普通外借总数", "参考外借", "保存/阅览", "在架率%"];
+  const lines = [header, ...buildCsvRows()].map((r) => r.map(csvCell).join(","));
+  // 加 BOM 保证 Excel 打开中文不乱码
+  return "\ufeff" + lines.join("\r\n");
+}
+
+function exportCsv() {
+  const today = new Date().toISOString().slice(0, 10);
+  downloadText(`图书难借吗-${today}.csv`, buildCsvText(), "text/csv;charset=utf-8");
+  toast("已导出 CSV —— 含全部历史与全部分馆，与上方勾选无关");
+}
+
 // ---------------- 书单助手 ----------------
 function splitBookLine(line) {
   return line.split(/[|｜]/).map((p) => p.trim());
@@ -716,19 +1014,29 @@ function callNumberProblem(callNumber) {
 
 function parseBookLines(text) {
   const results = [];
+  let currentGroup = null; // 「## 组名」组头行作用于其后的书，空组头回到未分组
   for (const [i, rawLine] of text.split(/\r?\n/).entries()) {
     const line = rawLine.trim();
-    if (!line || line.startsWith("#")) continue;
+    if (!line) continue;
+    if (line.startsWith("##")) {
+      currentGroup = line.slice(2).trim() || null;
+      continue;
+    }
+    if (line.startsWith("#")) continue;
     const parts = splitBookLine(line);
-    const [title, callNumber, recordId] = parts;
+    const [title, callNumber, recordId, tagsField] = parts;
+    const tags = String(tagsField ?? "")
+      .split(/[,，]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
     const problems = [];
     if (!title && !callNumber) problems.push("书名和索书号不能都为空");
     const cnProblem = callNumberProblem(callNumber);
     if (cnProblem) problems.push(cnProblem);
     if (recordId && callNumber && callNumber.split(/[;；]/).length > 1) problems.push("多索书号行的 record_id 会被采样器忽略");
     if (recordId && !/^[0-9a-fA-F-]{8,}$/.test(recordId)) problems.push("record_id 格式可疑");
-    if (parts.length > 3) problems.push("超过 3 列");
-    results.push({ line: i + 1, title, callNumber, recordId, problems });
+    if (parts.length > 4) problems.push("超过 4 列");
+    results.push({ line: i + 1, title, callNumber, recordId, group: currentGroup, tags, problems });
   }
   return results;
 }
@@ -754,13 +1062,15 @@ function setupBooksHelper() {
       <td><input type="text" class="book-title" placeholder="可留空" value="${escapeHtml(book.title ?? "")}"></td>
       <td><input type="text" class="book-call" placeholder="必填" value="${escapeHtml(book.callNumber ?? "")}"></td>
       <td><input type="text" class="book-record" placeholder="可选" value="${escapeHtml(book.recordId ?? "")}"></td>
+      <td><input type="text" class="book-group" placeholder="可选" value="${escapeHtml(book.group ?? "")}"></td>
+      <td><input type="text" class="book-tags" placeholder="可选，逗号分隔" value="${escapeHtml((book.tags ?? []).join(","))}"></td>
       <td class="tc row-status">${statusTagHtml(book.resolveStatus ?? "new")}</td>
       <td class="tc"><button class="btn-delete" title="删除">删除</button></td>
     `;
     tr.querySelector(".btn-delete").addEventListener("click", () => { tr.remove(); saveDraft(); });
     tr.querySelector(".book-enabled").addEventListener("change", () => { updateRowStyle(tr); saveDraft(); });
     // 编辑过内容后，原来的匹配状态失效，标记为「已修改」；同时自动保存草稿
-    tr.querySelectorAll(".book-title, .book-call, .book-record").forEach((input) => {
+    tr.querySelectorAll(".book-title, .book-call, .book-record, .book-group, .book-tags").forEach((input) => {
       input.addEventListener("input", () => {
         tr.querySelector(".row-status").innerHTML = `<span class="resolve-tag warn">已修改</span>`;
         saveDraft();
@@ -780,6 +1090,8 @@ function setupBooksHelper() {
       title: tr.querySelector(".book-title").value.trim() || null,
       callNumber: tr.querySelector(".book-call").value.trim() || null,
       recordId: tr.querySelector(".book-record").value.trim() || null,
+      group: tr.querySelector(".book-group").value.trim() || null,
+      tags: tr.querySelector(".book-tags").value.split(/[,，]/).map((s) => s.trim()).filter(Boolean),
       disabled: !tr.querySelector(".book-enabled").checked,
     }));
   }
@@ -813,17 +1125,25 @@ function setupBooksHelper() {
     const header = [
       "# 图书难借吗 · 追踪书单",
       `# 由书单助手生成于 ${new Date().toISOString().slice(0, 10)}`,
-      "# 格式：书名 | 索书号 | record_id（可选）",
+      "# 格式：书名 | 索书号 | record_id（可选）| 标签（可选，逗号分隔）",
       "# 多卷册：索书号用 ; 分隔（如 TU-092/3965-20; TU-092/3965-17），此时 record_id 不适用",
+      "# 分组：以「## 组名」行开始一个分组，作用于其后的所有书",
       "",
     ].join("\n");
-    const body = rows
-      .map((r) => {
-        const line = [r.title, r.callNumber, r.recordId].filter(Boolean).join(" | ");
-        return r.disabled ? `# ${line}` : line;
-      })
-      .join("\n");
-    return `${header}${body}\n`;
+    // 按分组聚类输出：相邻同组的书共享一个「## 组名」组头，组间空行；未分组书不打组头
+    const lines = [];
+    let lastGroup = undefined;
+    for (const r of rows) {
+      if (r.group !== lastGroup) {
+        if (lines.length) lines.push("");
+        if (r.group) lines.push(`## ${r.group}`);
+        else if (lastGroup) lines.push("##"); // 空组头：从分组回到未分组
+        lastGroup = r.group;
+      }
+      const line = [r.title, r.callNumber, r.recordId, r.tags.length ? r.tags.join(",") : null].filter(Boolean).join(" | ");
+      lines.push(r.disabled ? `# ${line}` : line);
+    }
+    return `${header}${lines.join("\n")}\n`;
   }
 
   // ---------- 本地草稿（localStorage 自动保存） ----------
@@ -854,7 +1174,7 @@ function setupBooksHelper() {
     tbody.innerHTML = "";
     const books = state.index?.books ?? [];
     if (books.length) {
-      books.forEach((b) => addRow({ title: b.title, callNumber: callNumberText(b, "; "), recordId: b.recordId, disabled: false, resolveStatus: b.resolveStatus }));
+      books.forEach((b) => addRow({ title: b.title, callNumber: callNumberText(b, "; "), recordId: b.recordId, group: b.group, tags: b.tags, disabled: false, resolveStatus: b.resolveStatus }));
     } else {
       addRow();
     }
@@ -880,7 +1200,7 @@ function setupBooksHelper() {
     const parsed = parseBookLines(text);
     tbody.innerHTML = "";
     if (parsed.length) {
-      parsed.forEach((r) => addRow({ title: r.title, callNumber: r.callNumber, recordId: r.recordId, disabled: false }));
+      parsed.forEach((r) => addRow({ title: r.title, callNumber: r.callNumber, recordId: r.recordId, group: r.group, tags: r.tags, disabled: false }));
     } else {
       addRow();
     }

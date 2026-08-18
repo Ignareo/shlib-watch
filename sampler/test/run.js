@@ -1,13 +1,15 @@
-// 自测：解析器（fixture）、状态归一化、调度、清理、书单解析
+// 自测：解析器（fixture）、状态归一化、调度、清理、书单解析、归还日期、元数据回填
 // 运行：cd sampler && npm install && node test/run.js
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import assert from "node:assert";
-import { parseSearchResults, parseHoldings, groupByBranch } from "../src/parsers.js";
+import { parseSearchResults, parseHoldings, groupByBranch, cleanStatusText, parseRecordMetadata } from "../src/parsers.js";
 import { classifyAvailability } from "../src/normalize.js";
 import { isSamplingDay } from "../src/schedule.js";
-import { parseBooksFile } from "../src/books.js";
+import { parseBooksFile, resolveBook, assignStableIds } from "../src/books.js";
+import { parseReturnDateResponse, fillDueDates } from "../src/duedate.js";
+import { readCacheEntry, pickCacheMeta } from "../src/record-cache.js";
 
 let passed = 0;
 function test(name, fn) {
@@ -81,6 +83,49 @@ Call Number: I247.5/8030-23 barcode: 99001 Circulation Type: 普通外借 Circul
 Call Number: I247.5/8030-23 barcode: 99002 Circulation Type: 普通外借 Circulation Status: 已借出
 </pre></body></html>`;
 
+// ---------- fixture：馆藏明细页（借出册，状态列含内嵌 JS 与 data-itemid） ----------
+const HOLDINGS_BORROWED_HTML = `
+<html><body>
+<h2>Branch: 上海图书馆</h2>
+<div class="location-item">
+  <h3>淮海路馆 3F 外借室</h3>
+  <table>
+    <tr vocab="http://schema.org/"><td>C912.81/4422</td><td>541210001</td><td>普通外借</td>
+      <td>已借出
+        <span class="item-return-date" data-itemid="987654">预计归还时间: <span></span><p style="display:none"></p></span>
+        <script>$(".item-return-date").click(function () { const itemId = $(this).data('itemid'); $.ajax({ url : VuFind.path + "/AJAX/JSON?method=itemReturnDate", data: {itemId: itemId} }); })</script>
+      </td></tr>
+    <tr vocab="http://schema.org/"><td>C912.81/4422</td><td>541210002</td><td>普通外借</td><td>已归还</td></tr>
+  </table>
+</div>
+</body></html>`;
+
+// 真实采样数据里混入的内嵌 JS 原文（取自 docs/data/history/b1.json）
+const POLLUTED_RAW_STATUS =
+  '已借出 预计归还时间: $(".item-return-date").click(function () { if($(this).find("p").is(":hidden")){ ' +
+  "const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); " +
+  '$.ajax({ type : \'GET\', url : VuFind.path + "/AJAX/JSON?method=itemReturnDate", data: {itemId: itemId} }); } })';
+
+// ---------- fixture：书目详情页（元数据回填） ----------
+const RECORD_PAGE_HTML = `
+<html><head><meta property="og:title" content="城市研究 : 理论与方法"></head><body>
+<script>var noop = function () {};</script>
+<h1>城市研究 : 理论与方法</h1>
+<table class="citation">
+  <tr><th>主要责任者</th><td>张明 著; 李华 译</td></tr>
+  <tr><th>出版社</th><td>同济大学出版社</td></tr>
+  <tr><th>出版时间</th><td>2021</td></tr>
+  <tr><th>资料类型</th><td>图书</td></tr>
+</table>
+</body></html>`;
+
+const RECORD_PAGE_TEXT_HTML = `
+<html><body><div>
+作者 : 余华
+出版社 : 作家出版社
+出版日期 : 2012年5月
+</div></body></html>`;
+
 console.log("\n[1] 检索结果解析");
 test("解析出两条记录及元数据", () => {
   const items = parseSearchResults(SEARCH_HTML);
@@ -134,6 +179,60 @@ test("纯文本结构兜底解析", () => {
   assert.strictEqual(copies[0].barcode, "99001");
   assert.strictEqual(copies[0].availability, "available");
   assert.strictEqual(copies[1].availability, "unavailable");
+});
+
+console.log("\n[2b] 借出册 rawStatus 清洗与 itemId 提取");
+test("状态列内嵌 JS 被剔除，data-itemid 被提取", () => {
+  const copies = parseHoldings(HOLDINGS_BORROWED_HTML);
+  assert.strictEqual(copies.length, 2);
+  assert.strictEqual(copies[0].rawStatus, "已借出"); // 不含「预计归还时间」和 JS
+  assert.strictEqual(copies[0].itemId, "987654");
+  assert.strictEqual(copies[0].dueDate, null); // 解析阶段不填，由主流程补查
+  assert.strictEqual(copies[0].availability, "unavailable");
+  assert.strictEqual(copies[1].rawStatus, "已归还");
+  assert.strictEqual(copies[1].itemId, null);
+});
+
+test("cleanStatusText 清洗真实采样中的脏 rawStatus", () => {
+  assert.strictEqual(cleanStatusText(POLLUTED_RAW_STATUS), "已借出");
+  assert.strictEqual(cleanStatusText("已归还"), "已归还");
+  assert.strictEqual(cleanStatusText("在架"), "在架");
+  assert.strictEqual(cleanStatusText(""), null);
+  assert.strictEqual(cleanStatusText(null), null);
+});
+
+console.log("\n[2c] 预计归还日期接口");
+test("parseReturnDateResponse 各种响应形态", () => {
+  assert.strictEqual(parseReturnDateResponse('{"status":true,"data":"2026-08-25"}'), "2026-08-25");
+  assert.strictEqual(parseReturnDateResponse('{"status":true,"data":"<span>2026年8月5日</span>"}'), "2026-08-05");
+  assert.strictEqual(parseReturnDateResponse('{"status":true,"data":"2026/8/5 23:59"}'), "2026-08-05");
+  assert.strictEqual(parseReturnDateResponse("2026-8-5"), "2026-08-05"); // 非 JSON 纯文本兜底
+  assert.strictEqual(parseReturnDateResponse('{"status":false,"msg":"无记录"}'), null);
+  assert.strictEqual(parseReturnDateResponse(""), null);
+  assert.strictEqual(parseReturnDateResponse(null), null);
+});
+
+test("fillDueDates 只查借出册，单册失败不影响其他册", async () => {
+  const copies = [
+    { itemId: "111", availability: "unavailable", rawStatus: "已借出", dueDate: null },
+    { itemId: "222", availability: "available", rawStatus: "在架", dueDate: null },   // 在架不查
+    { itemId: null, availability: "unavailable", rawStatus: "已借出", dueDate: null }, // 无 itemId 不查
+    { itemId: "333", availability: "unavailable", rawStatus: "预约", dueDate: null },  // 非借出不查
+    { itemId: "444", availability: "unavailable", rawStatus: "已借出", dueDate: null }, // 接口失败 → null
+  ];
+  const calls = [];
+  const fakeClient = {
+    async fetchItemReturnDate(itemId) {
+      calls.push(itemId);
+      if (itemId === "444") throw new Error("网络错误");
+      return '{"status":true,"data":"2026-09-01"}';
+    },
+  };
+  await fillDueDates(fakeClient, copies);
+  assert.deepStrictEqual(calls, ["111", "444"]);
+  assert.strictEqual(copies[0].dueDate, "2026-09-01");
+  assert.strictEqual(copies[1].dueDate, null);
+  assert.strictEqual(copies[4].dueDate, null); // 失败册置 null，不抛出
 });
 
 console.log("\n[3] 状态归一化");
@@ -213,6 +312,55 @@ test("多索书号行的 record_id 被忽略", () => {
   fs.rmSync(tmp);
 });
 
+test("组头行解析：## 组名作用于其后书目，空组头回到未分组", () => {
+  const tmp = path.join(os.tmpdir(), `books-group-${Date.now()}.txt`);
+  fs.writeFileSync(
+    tmp,
+    [
+      "# 普通注释行不算组头",
+      "无组书 | A/1",
+      "## 古建筑",
+      "穿墙透壁 | TU-092.2/4443",
+      "中国建筑史 | TU-092/3965-20",
+      "## 香港",
+      "香港影像志 | K296.58-64/4422",
+      "##",
+      "又是无组书 | B/2",
+    ].join("\n")
+  );
+  const books = parseBooksFile(tmp);
+  assert.strictEqual(books.length, 5);
+  assert.strictEqual(books[0].group, null); // 组头前的书无分组
+  assert.strictEqual(books[1].group, "古建筑");
+  assert.strictEqual(books[2].group, "古建筑");
+  assert.strictEqual(books[3].group, "香港");
+  assert.strictEqual(books[4].group, null); // 空组头重置
+  fs.rmSync(tmp);
+});
+
+test("第四列标签解析：逗号 / 全角逗号分隔，空段丢弃，旧格式行为不变", () => {
+  const tmp = path.join(os.tmpdir(), `books-tags-${Date.now()}.txt`);
+  fs.writeFileSync(
+    tmp,
+    [
+      "## 上海城市行走",
+      "上海文学散步 | I209.951/4122 | abc12345-aaaa | 散步,城市",
+      "汉口路上 | K295.1/3754 | | 散步，历史，", // 全角逗号 + 尾逗号
+      "旧格式行 | C/3", // 无第四列
+      "多卷册带标签 | D/4; D/5 | abc12345-bbbb | 合集", // record_id 被忽略但标签保留
+    ].join("\n")
+  );
+  const books = parseBooksFile(tmp);
+  assert.deepStrictEqual(books[0].tags, ["散步", "城市"]);
+  assert.strictEqual(books[0].group, "上海城市行走");
+  assert.deepStrictEqual(books[1].tags, ["散步", "历史"]);
+  assert.deepStrictEqual(books[2].tags, []);
+  assert.strictEqual(books[2].group, "上海城市行走");
+  assert.deepStrictEqual(books[3].tags, ["合集"]);
+  assert.strictEqual(books[3].recordId, null); // 多索书号行第三列仍被忽略
+  fs.rmSync(tmp);
+});
+
 console.log("\n[6] 历史数据清理");
 test("prune 按日期与 before 删除", async () => {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "prune-test-"));
@@ -241,6 +389,122 @@ test("prune 按日期与 before 删除", async () => {
     delete process.env.BBT_DATA_DIR;
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   }
+});
+
+console.log("\n[7] 元数据回填");
+test("parseRecordMetadata：表格结构详情页", () => {
+  const meta = parseRecordMetadata(RECORD_PAGE_HTML);
+  assert.strictEqual(meta.title, "城市研究 : 理论与方法");
+  assert.deepStrictEqual(meta.authors, ["张明 著", "李华 译"]);
+  assert.strictEqual(meta.publisher, "同济大学出版社");
+  assert.strictEqual(meta.publishedYear, "2021");
+  assert.strictEqual(meta.materialType, "图书");
+});
+
+test("parseRecordMetadata：纯文本行兜底，年份从日期中提取", () => {
+  const meta = parseRecordMetadata(RECORD_PAGE_TEXT_HTML);
+  assert.deepStrictEqual(meta.authors, ["余华"]);
+  assert.strictEqual(meta.publisher, "作家出版社");
+  assert.strictEqual(meta.publishedYear, "2012");
+});
+
+test("缓存读取兼容旧字符串与新对象两种形态", () => {
+  assert.deepStrictEqual(readCacheEntry({ "书|A/1": "rid-1" }, "书|A/1"), { recordId: "rid-1" });
+  assert.deepStrictEqual(
+    readCacheEntry({ "书|A/1": { recordId: "rid-2", meta: { publisher: "某社" } } }, "书|A/1"),
+    { recordId: "rid-2", meta: { publisher: "某社" } }
+  );
+  assert.strictEqual(readCacheEntry({}, "书|A/1"), null);
+});
+
+test("pickCacheMeta 提取元数据子集，空信息返回 null", () => {
+  const meta = pickCacheMeta({
+    recordId: "rid-1", title: "活着", authors: ["余华"],
+    publisher: "作家出版社", publishedYear: "2012", callNumber: "I247.5/8030-23", materialType: "图书",
+  });
+  assert.deepStrictEqual(meta, {
+    title: "活着", authors: ["余华"], publisher: "作家出版社",
+    publishedYear: "2012", materialType: "图书",
+  });
+  assert.strictEqual(pickCacheMeta({ recordId: "rid-1", callNumber: "A/1" }), null);
+  assert.strictEqual(pickCacheMeta(null), null);
+});
+
+test("resolveBook 缓存命中时带回缓存的元数据", async () => {
+  const deps = {
+    parseSearchResults,
+    fetchHoldingsCount: async () => 0,
+    recordCache: {
+      "活着|I247.5/8030-23": {
+        recordId: "rid-cached",
+        meta: { title: "活着", authors: ["余华"], publisher: "作家出版社", publishedYear: "2012", materialType: "图书" },
+      },
+    },
+  };
+  const resolution = await resolveBook(null, { title: "活着", callNumber: "I247.5/8030-23" }, deps);
+  assert.strictEqual(resolution.status, "resolved");
+  assert.strictEqual(resolution.recordId, "rid-cached");
+  assert.deepStrictEqual(resolution.meta.authors, ["余华"]);
+  assert.strictEqual(resolution.meta.publisher, "作家出版社");
+});
+
+test("resolveBook 旧格式字符串缓存仍可用（无 meta）", async () => {
+  const deps = {
+    parseSearchResults,
+    fetchHoldingsCount: async () => 0,
+    recordCache: { "活着|I247.5/8030-23": "rid-legacy" },
+  };
+  const resolution = await resolveBook(null, { title: "活着", callNumber: "I247.5/8030-23" }, deps);
+  assert.strictEqual(resolution.recordId, "rid-legacy");
+  assert.strictEqual(resolution.meta, undefined);
+});
+
+// ---------- 稳定 id 分配 ----------
+const mkBook = (id, title, callNumbers) => ({
+  id,
+  title,
+  callNumber: callNumbers.join("; "),
+  callNumbers,
+});
+
+test("assignStableIds：书单中间插入新书，原有书 id 不变（按索书号集合匹配）", () => {
+  const existing = [
+    { id: "b1", title: "甲", callNumber: "A/1" },
+    { id: "b2", title: "乙", callNumber: "B/2" },
+    { id: "b3", title: "丙", callNumber: "C/3" },
+  ];
+  const books = [mkBook("b1", "甲", ["A/1"]), mkBook("b2", "新", ["N/9"]), mkBook("b3", "乙", ["B/2"]), mkBook("b4", "丙", ["C/3"])];
+  assignStableIds(books, existing, ["b1", "b2", "b3"]);
+  assert.deepStrictEqual(books.map((b) => b.id), ["b1", "b4", "b2", "b3"]);
+});
+
+test("assignStableIds：多卷册合并行后与拆分前索书号集合一致，沿用旧 id", () => {
+  const existing = [{ id: "b2", title: "营建的文明", callNumber: ["TU-092.2/4952-9", "TU-092.2/4952-1"] }];
+  const books = [mkBook("b1", "营建的文明", ["TU-092.2/4952-9", "TU-092.2/4952-1"])];
+  assignStableIds(books, existing, ["b1", "b2"]);
+  assert.strictEqual(books[0].id, "b2");
+});
+
+test("assignStableIds：改书名不改索书号沿用 id；改索书号且书名唯一也沿用 id", () => {
+  const existing = [
+    { id: "b5", title: "旧书名", callNumber: "D/4" },
+    { id: "b7", title: "汉口路上", callNumber: "K295.1/0000" },
+  ];
+  const books = [mkBook("b1", "新书名", ["D/4"]), mkBook("b2", "汉口路上", ["K295.1/3754"])];
+  assignStableIds(books, existing, ["b5", "b7"]);
+  assert.deepStrictEqual(books.map((b) => b.id), ["b5", "b7"]);
+});
+
+test("assignStableIds：不复用已删除书的 id（无历史污染）", () => {
+  const books = [mkBook("b1", "全新书", ["Z/9"])];
+  assignStableIds(books, [], ["b1", "b2", "b3"]); // b1-b3 都有历史文件
+  assert.strictEqual(books[0].id, "b4");
+});
+
+test("assignStableIds：无既有数据时保持行号 id", () => {
+  const books = [mkBook("b1", "甲", ["A/1"]), mkBook("b2", "乙", ["B/2"])];
+  assignStableIds(books, [], []);
+  assert.deepStrictEqual(books.map((b) => b.id), ["b1", "b2"]);
 });
 
 console.log(`\n${process.exitCode ? "存在失败用例" : `全部通过（${passed} 项）`}\n`);

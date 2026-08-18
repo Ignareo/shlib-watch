@@ -6,17 +6,19 @@
 import fs from "node:fs";
 import path from "node:path";
 import { LibraryClient, CaptchaRequiredError } from "./client.js";
-import { parseSearchResults, parseHoldings, groupByBranch } from "./parsers.js";
-import { parseBooksFile, resolveBook } from "./books.js";
+import { parseSearchResults, parseHoldings, parseRecordMetadata, groupByBranch } from "./parsers.js";
+import { parseBooksFile, resolveBook, assignStableIds } from "./books.js";
+import { fillDueDates } from "./duedate.js";
 import { isSamplingDay, describeSchedule, toLocalDateStr } from "./schedule.js";
 import {
   loadIndex, saveIndex, loadHistory, saveHistory, upsertSample,
   readPruneRequest, clearPruneRequest, applyPrune, collectBranches,
+  HISTORY_DIR,
 } from "./store.js";
 import { solveCaptchaInteractively } from "./captcha.js";
 import { commitAndPush } from "./git.js";
 import { ROOT } from "./paths.js";
-import { loadRecordCache, saveRecordCache } from "./record-cache.js";
+import { loadRecordCache, saveRecordCache, pickCacheMeta } from "./record-cache.js";
 
 const CONFIG_FILE = path.join(ROOT, "config.json");
 const BOOKS_FILE = path.join(ROOT, "books.txt");
@@ -38,6 +40,18 @@ function parseArgs(argv) {
     else if (argv[i] === "--before") args.before = argv[++i] ?? null;
   }
   return args;
+}
+
+// history 目录下所有已存在的书 id（去 .json 后缀）：分配新 id 时跳过，防止复用已删除书的 id 串历史
+function existingHistoryIds() {
+  try {
+    return fs
+      .readdirSync(HISTORY_DIR)
+      .filter((f) => f.endsWith(".json"))
+      .map((f) => f.replace(/\.json$/, ""));
+  } catch {
+    return [];
+  }
 }
 
 async function withCaptchaRetry(client, fn) {
@@ -92,6 +106,10 @@ async function cmdSample({ force }) {
 
   const client = new LibraryClient(config.request ?? {});
   const index = loadIndex();
+
+  // 3b. 稳定 id：沿用既有数据中的书 id，避免书单增删/调序/合并行后历史错位
+  assignStableIds(books, index.books ?? [], existingHistoryIds());
+
   const nowIso = now.toISOString();
   const dateStr = toLocalDateStr(now);
   const weekday = now.getDay() === 0 ? 7 : now.getDay();
@@ -116,9 +134,11 @@ async function cmdSample({ force }) {
       );
       if (resolution === null) { aborted = true; break; } // 验证码未通过，终止本次运行
       resolutions.push({ callNumber, ...resolution });
-      // 缓存解析成功的 record_id（多版本且需要核对时，暂不缓存）
+      // 缓存解析成功的 record_id（多版本且需要核对时，暂不缓存）；有元数据则一并缓存
       if (resolution.status === "resolved" && resolution.recordId && !resolution.needsReview) {
-        recordCache[`${book.title ?? ""}|${callNumber}`] = resolution.recordId;
+        const key = `${book.title ?? ""}|${callNumber}`;
+        const meta = pickCacheMeta(resolution.meta);
+        recordCache[key] = meta ? { recordId: resolution.recordId, meta } : resolution.recordId;
       }
     }
     if (aborted) break;
@@ -147,9 +167,44 @@ async function cmdSample({ force }) {
       })),
       historyFile: `data/history/${book.id}.json`,
     };
+    // 分组 / 标签：有值才输出，保持 index.json schema 干净
+    if (book.group) entry.group = book.group;
+    if (book.tags?.length) entry.tags = book.tags;
     if (failed.length) {
       entry.unresolvedCallNumbers = failed.map((f) => f.callNumber);
       console.warn(`[采样]   部分索书号未匹配：${entry.unresolvedCallNumbers.join("、")}，已记 needsReview`);
+    }
+
+    // 3a+. 元数据回填：缓存命中（且缓存里没存元数据）或手写 record_id 时 meta 为空，
+    // 补抓一次记录页解析回填；结果写回缓存，下次采样直接命中不再重复抓。失败不影响采样。
+    const metadataMissing =
+      entry.recordId && (!entry.authors?.length || !entry.publisher || !entry.publishedYear);
+    if (metadataMissing) {
+      try {
+        const recordHtml = await withCaptchaRetry(client, () => client.fetchRecord(entry.recordId));
+        if (recordHtml) {
+          const meta = parseRecordMetadata(recordHtml);
+          if (!entry.authors?.length && meta.authors.length) entry.authors = meta.authors;
+          entry.publisher ??= meta.publisher;
+          entry.publishedYear ??= meta.publishedYear;
+          entry.materialType ??= meta.materialType;
+          entry.title ??= meta.title;
+          console.log(`[采样]   已从记录页回填元数据（作者 ${entry.authors.length} 位）`);
+          // 回填到缓存（仅限已有缓存条目；needsReview / 手写 record_id 的仍不新增缓存）
+          const primaryKey = `${book.title ?? ""}|${primary?.callNumber ?? callNumbers[0]}`;
+          const cached = recordCache[primaryKey];
+          const cacheMeta = pickCacheMeta(meta);
+          if (cacheMeta) {
+            if (typeof cached === "string") {
+              recordCache[primaryKey] = { recordId: cached, meta: cacheMeta };
+            } else if (cached && typeof cached === "object") {
+              cached.meta = cacheMeta;
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(`[采样]   元数据回填失败（不影响采样）：${error.message}`);
+      }
     }
 
     // 3b. 抓馆藏：每个 record 各取一次，copies 拼接后统一按分馆聚合，写成一条 sample
@@ -161,6 +216,8 @@ async function cmdSample({ force }) {
         allCopies.push(...parseHoldings(holdingsHtml));
       }
       if (aborted) break;
+      // 借出册补查「预计归还日期」（只对借出册发请求，单册失败不影响整体）
+      await withCaptchaRetry(client, () => fillDueDates(client, allCopies));
       const branches = groupByBranch(allCopies);
       console.log(
         `[采样]   ${allCopies.length} 册 / ${Object.keys(branches).length} 个分馆；` +

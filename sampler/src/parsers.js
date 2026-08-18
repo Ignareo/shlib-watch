@@ -119,15 +119,33 @@ export function parseHoldings(html) {
   return parseHoldingsText($);
 }
 
+// 状态文本清洗：借出册的状态列混有「预计归还时间」组件文本和整段内嵌 JS
+// （$(".item-return-date").click(...)...），只保留前面的纯状态（如「已借出」「已归还」）
+const STATUS_NOISE_MARKERS = ["预计归还时间", "$(", "function", "itemReturnDate"];
+export function cleanStatusText(text) {
+  if (!text) return null;
+  let cleaned = String(text);
+  for (const marker of STATUS_NOISE_MARKERS) {
+    const idx = cleaned.indexOf(marker);
+    if (idx >= 0) cleaned = cleaned.slice(0, idx);
+  }
+  return normalizeWhitespace(cleaned) || null;
+}
+
 function makeCopy(branch, location, fields) {
-  const availability = classifyAvailability(fields.rawStatus, fields.circulationType);
+  const rawStatus = cleanStatusText(fields.rawStatus);
+  const availability = classifyAvailability(rawStatus, fields.circulationType);
   return {
     branch: branch || null,
     location: location || null,
     callNumber: fields.callNumber || null,
     barcode: fields.barcode || null,
     circulationType: fields.circulationType || null,
-    rawStatus: fields.rawStatus || null,
+    rawStatus,
+    // itemId：借出册「预计归还时间」组件的 data-itemid，用于异步查询归还日期
+    itemId: fields.itemId || null,
+    // dueDate：预计归还日期（ISO 或 null），由采样主流程请求 itemReturnDate 接口回填
+    dueDate: null,
     availability,
   };
 }
@@ -149,11 +167,22 @@ function parseHoldingsTables($) {
         sibling.find("tr[vocab='http://schema.org/']").each((__, row) => {
           const cols = $(row).find("td").toArray();
           if (cols.length < 4) return;
-          const text = (i) => normalizeWhitespace(cheerio.load(cols[i]).text()) || null;
+          // 状态列剔除 <script> 再取文本（内嵌 JS 会混入 rawStatus）；clone 避免改动原 DOM
+          const text = (i) => {
+            const cell = $(cols[i]).clone();
+            cell.find("script").remove();
+            return normalizeWhitespace(cell.text()) || null;
+          };
+          // 借出册的「预计归还时间」组件带 data-itemid（可能在 td 自身或子元素上）
+          const itemId =
+            cols[3].attribs?.["data-itemid"] ??
+            $(cols[3]).find("[data-itemid]").first().attr("data-itemid") ??
+            null;
           copies.push(
             makeCopy(branch, location, {
               callNumber: text(0), barcode: text(1),
               circulationType: text(2), rawStatus: text(3),
+              itemId,
             })
           );
         });
@@ -207,6 +236,47 @@ function looksLikeLocationLine(text) {
     "circulation type:", "借阅类型:", "holdings", "related book", "full description",
   ];
   return !disallowed.some((m) => lowered.includes(m)) && text.length > 3;
+}
+
+// ---------------- 书目详情页元数据 ----------------
+// 用于缓存命中时的元数据回填。详情页结构未在线验证，做防御性解析：
+// 优先匹配表格行（th/td），再回退到全页文本行里的「标签 : 值」
+export function parseRecordMetadata(html) {
+  const $ = cheerio.load(html);
+  $("script,style").remove();
+
+  const fields = {};
+  $("tr").each((_, el) => {
+    const label = normalizeWhitespace($(el).find("th").first().text()).replace(/[:：]\s*$/, "");
+    const value = normalizeWhitespace($(el).find("td").first().text());
+    if (label && value && !(label in fields)) fields[label] = value;
+  });
+  const lines = $.root().text().split(/\n+/).map(normalizeWhitespace).filter(Boolean);
+  const findValue = (labels) => {
+    for (const label of labels) if (fields[label]) return fields[label];
+    const pattern = new RegExp(`^(?:${labels.map(escapeRegExp).join("|")})\\s*[:：]\\s*(.+)$`, "u");
+    for (const line of lines) {
+      const match = pattern.exec(line);
+      if (match?.[1]) return match[1].trim();
+    }
+    return null;
+  };
+
+  const authorText = findValue(["主要责任者", "个人著者", "作者", "责任者"]);
+  const yearText = findValue(["出版时间", "出版日期", "出版年"]);
+  const yearMatch = yearText ? /(\d{4})/.exec(yearText) : null;
+  return {
+    title:
+      normalizeWhitespace($("meta[property='og:title']").attr("content") ?? "") ||
+      normalizeWhitespace($("h1").first().text()) ||
+      null,
+    authors: authorText
+      ? authorText.split(/[;；]/).map((s) => s.trim()).filter(Boolean)
+      : [],
+    publisher: findValue(["出版社", "出版发行", "出版者"]),
+    publishedYear: yearMatch ? yearMatch[1] : yearText,
+    materialType: findValue(["资料类型", "文献类型", "载体类型"]),
+  };
 }
 
 // 把副本数组聚合成 { branch: {total, available, inLibrary, unavailable, unknown, copies} }

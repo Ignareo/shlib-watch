@@ -171,4 +171,13 @@ export class LibraryClient {
   fetchRecord(recordId) {
     return this.request(`/Record/${recordId}?lng=zh-cn`);
   }
+
+  // 借出册的预计归还日期（itemId 来自馆藏页「预计归还时间」组件的 data-itemid）
+  fetchItemReturnDate(itemId) {
+    const params = new URLSearchParams({
+      method: "itemReturnDate",
+      itemId: String(itemId),
+    });
+    return this.request(`/AJAX/JSON?${params.toString()}`);
+  }
 }
