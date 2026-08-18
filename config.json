@@ -1,0 +1,20 @@
+{
+  "schedule": {
+    "frequency": "daily",
+    "weeklyDays": [3, 6],
+    "anchorDate": "2026-08-17",
+    "monthlyDay": 1
+  },
+  "request": {
+    "intervalMs": 3000,
+    "timeoutMs": 25000,
+    "retries": 3
+  },
+  "git": {
+    "autoCommit": true,
+    "autoPush": true
+  },
+  "browser": {
+    "headedCaptcha": true
+  }
+}

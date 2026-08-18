@@ -1,0 +1,39 @@
+name: 定时采样馆藏
+
+# GitHub Actions 每天到点唤醒，是否真正采样由 config.json 的周期设置决定。
+# 注意：GitHub 的运行机是数据中心 IP，可能触发上海图书馆的人机验证；
+# 若采样日志显示触发验证，请改用本地模式（见 README「本地采样」）。
+
+on:
+  schedule:
+    # 每天 10:05（北京时间，UTC+8）= UTC 02:05
+    - cron: "5 2 * * *"
+  workflow_dispatch: # 允许在 Actions 页面手动触发
+
+permissions:
+  contents: write # 允许把采样数据提交回仓库
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 安装依赖
+        run: cd sampler && npm install
+
+      - name: 执行采样
+        run: cd sampler && node src/index.js sample
+
+      - name: 提交采样数据
+        # 采样器内部已做 commit；这里兜底一次，确保数据一定入库
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data
+          git diff --cached --quiet || git commit -m "sample: $(date +%F)"
+          git push

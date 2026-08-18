@@ -1,0 +1,327 @@
+{
+  "bookId": "b1",
+  "samples": [
+    {
+      "ts": "2026-08-17T11:48:39.495Z",
+      "date": "2026-08-17",
+      "weekday": 1,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 3,
+          "available": 1,
+          "inLibrary": 0,
+          "unavailable": 2,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121110810868",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121110810869",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111076404",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            }
+          ]
+        },
+        "上海图书馆（东馆）": {
+          "total": 6,
+          "available": 0,
+          "inLibrary": 1,
+          "unavailable": 5,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111076405",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111419747",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121112065582",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121112065583",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121112065584",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆全球城市馆 - 4楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111469810",
+              "circulationType": "仅供阅览资料",
+              "rawStatus": "已归还",
+              "availability": "in_library"
+            }
+          ]
+        },
+        "上海图书馆网借中心": {
+          "total": 5,
+          "available": 0,
+          "inLibrary": 0,
+          "unavailable": 5,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121110974464",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111172511",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111929985",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111929986",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111929987",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "ts": "2026-08-18T01:06:48.924Z",
+      "date": "2026-08-18",
+      "weekday": 2,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 3,
+          "available": 1,
+          "inLibrary": 0,
+          "unavailable": 2,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121110810868",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121110810869",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111076404",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            }
+          ]
+        },
+        "上海图书馆（东馆）": {
+          "total": 6,
+          "available": 0,
+          "inLibrary": 1,
+          "unavailable": 5,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111076405",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111419747",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121112065582",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121112065583",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121112065584",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆全球城市馆 - 4楼",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111469810",
+              "circulationType": "仅供阅览资料",
+              "rawStatus": "已归还",
+              "availability": "in_library"
+            }
+          ]
+        },
+        "上海图书馆网借中心": {
+          "total": 5,
+          "available": 0,
+          "inLibrary": 0,
+          "unavailable": 5,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121110974464",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111172511",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111929985",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111929986",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "D630.1/8197",
+              "barcode": "54121111929987",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出 预计归还时间: $(\".item-return-date\").click(function () { if($(this).find(\"p\").is(\":hidden\")){ const itemThis = this; const itemId = $(itemThis).data('itemid'); $(itemThis).find(\"p\").show(); $.ajax({ type : 'GET', url : VuFind.path + \"/AJAX/JSON?method=itemReturnDate\", data: {itemId: itemId}, dataType: \"json\", crossDomain : true, contentType : \"application/json\", success : function(data) { $(itemThis).find(\"span\").html(data.data); } }); } })",
+              "availability": "unavailable"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

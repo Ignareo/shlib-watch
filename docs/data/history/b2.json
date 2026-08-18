@@ -1,0 +1,75 @@
+{
+  "bookId": "b2",
+  "samples": [
+    {
+      "ts": "2026-08-17T11:48:39.495Z",
+      "date": "2026-08-17",
+      "weekday": 1,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 2,
+          "available": 2,
+          "inLibrary": 0,
+          "unavailable": 0,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "TU-092.2/4952-9",
+              "barcode": "54121110594890",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "TU-092.2/4952-9",
+              "barcode": "54121110594891",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已归还",
+              "availability": "available"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "ts": "2026-08-18T01:06:48.924Z",
+      "date": "2026-08-18",
+      "weekday": 2,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 2,
+          "available": 2,
+          "inLibrary": 0,
+          "unavailable": 0,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "TU-092.2/4952-9",
+              "barcode": "54121110594890",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "TU-092.2/4952-9",
+              "barcode": "54121110594891",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已归还",
+              "availability": "available"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

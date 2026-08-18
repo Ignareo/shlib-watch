@@ -1,0 +1,19 @@
+{
+  "name": "book-borrow-tracker-sampler",
+  "version": "1.0.0",
+  "description": "上海图书馆馆藏定时采样器（图书难借吗）",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "sample": "node src/index.js sample",
+    "sample:force": "node src/index.js sample --force",
+    "prune": "node src/index.js prune",
+    "check": "node src/index.js check",
+    "test": "node test/run.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}

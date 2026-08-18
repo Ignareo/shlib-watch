@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图书难借吗 · 上海图书馆馆藏观测</title>
+  <meta name="description" content="周期性观测上海图书馆指定图书的馆藏状态，用数据回答「这本书到底有多难借」。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- 刊头 -->
+    <header class="masthead">
+      <div class="masthead-top">
+        <span id="issue-no">第 — 期</span>
+        <span>上海图书馆 · 馆藏观测</span>
+        <span id="updated-at">数据更新中…</span>
+      </div>
+      <h1>图书难借吗</h1>
+      <p class="subtitle">周期性采样指定图书的馆藏状态，用积累的数据回答：<em>这本书，到底有多难借？</em></p>
+      <div id="demo-banner" class="demo-banner" hidden>当前展示的是示例数据 —— 部署并运行采样器后，这里会显示你的真实观测结果。</div>
+    </header>
+
+    <!-- 概览 -->
+    <section class="stats-band" id="stats-band" hidden>
+      <div class="stat-cell"><div class="num" id="stat-books">—</div><div class="label">追踪书目</div></div>
+      <div class="stat-cell"><div class="num" id="stat-available">—</div><div class="label">当前可借</div></div>
+      <div class="stat-cell"><div class="num" id="stat-score">—</div><div class="label">平均难借分</div></div>
+      <div class="stat-cell"><div class="num" id="stat-days">—</div><div class="label">观测天数</div></div>
+    </section>
+
+    <!-- 当前可借情况 -->
+    <section class="avail-board" id="avail-board" hidden>
+      <div class="avail-group">
+        <span class="avail-label ok">现在可外借：</span>
+        <span class="chips" id="chips-available"></span>
+      </div>
+      <div class="avail-group">
+        <span class="avail-label muted">仅馆内浏览：</span>
+        <span class="chips" id="chips-inhouse"></span>
+      </div>
+      <div class="avail-note" id="avail-note"></div>
+    </section>
+
+    <!-- 书卡筛选 -->
+    <div class="branch-bar" id="branch-bar" hidden>
+      <span>筛选：</span>
+      <span id="branch-pills"></span>
+    </div>
+
+    <!-- 书卡列表 -->
+    <main id="book-list"></main>
+
+    <!-- 空状态 -->
+    <div class="empty-state" id="empty-state" hidden>
+      <div class="big">观测尚未开始</div>
+      <p>把想追踪的书按「书名 | 索书号」写进仓库根目录的 <b>books.txt</b>，然后运行一次采样（本地 <b>npm run sample:force</b> 或 GitHub Actions 手动触发），数据积累后这里就会长出图表。也可以先用下方「书单助手」生成书单。</p>
+      <button class="btn primary" id="btn-demo">先看看示例数据长什么样</button>
+    </div>
+
+    <!-- 历史数据管理 -->
+    <section id="history-section" hidden>
+      <h2 class="section-title">历史数据栏 <span class="en">Archive</span></h2>
+      <p class="section-note">网页是静态的，不能直接改仓库数据。在这里勾选要删的采样日期（或设置「删除早于某日的全部数据」），生成 <code>prune.json</code> 后提交到仓库 <code>docs/data/</code> 目录，下次采样时自动生效。本地也可以直接运行 <code>npm run prune -- --before 2026-01-01</code>。</p>
+      <div class="panel">
+        <div class="prune-row">
+          <button class="btn" id="btn-select-all">全选</button>
+          <button class="btn" id="btn-select-none">全不选</button>
+          <span style="color:var(--faint)">|</span>
+          <label>删除早于 <input type="date" id="prune-before"> 的全部数据</label>
+          <span style="color:var(--faint)">|</span>
+          <button class="btn primary" id="btn-prune-copy">复制 prune.json</button>
+          <button class="btn" id="btn-prune-download">下载 prune.json</button>
+        </div>
+        <table class="history-table">
+          <thead><tr><th style="width:36px"></th><th>采样日期</th><th>星期</th><th>覆盖书目</th></tr></thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 书单助手 -->
+    <section>
+      <h2 class="section-title">书单助手 <span class="en">Reading List</span></h2>
+      <p class="section-note">已自动载入当前追踪书目，可在此增删、启用/禁用、修改书名或索书号。书名可留空，只填索书号也能自动匹配。<b>所有修改自动保存在浏览器中</b>；本页面是纯静态网页，不会直接修改仓库——点「生成 books.txt」，复制或下载结果，替换仓库根目录的 <code>books.txt</code> 并提交后生效。「刷新数据」在本地服务器（<code>node server.js</code>）下会变为「重新采样」，真实执行一次采样；静态托管（GitHub Pages）下只重新拉取仓库数据，不影响本地草稿。</p>
+      <div class="panel">
+        <div class="prune-row">
+          <input type="file" id="books-file" accept=".txt,text/plain" hidden>
+          <button class="btn" id="btn-import">导入 txt 文件</button>
+          <button class="btn" id="btn-add-book">+ 添加书目</button>
+          <button class="btn" id="btn-validate">校验格式</button>
+          <button class="btn primary" id="btn-generate">生成 books.txt</button>
+          <button class="btn" id="btn-copy-books" disabled>复制 books.txt</button>
+          <button class="btn" id="btn-download-books" disabled>下载 books.txt</button>
+          <span style="color:var(--faint)">|</span>
+          <button class="btn" id="btn-refresh">刷新数据</button>
+          <span class="refresh-status" id="refresh-status"></span>
+          <button class="btn-subtle" id="btn-reset-books">重置为仓库书单</button>
+        </div>
+        <pre class="sample-log" id="sample-log" hidden></pre>
+        <details class="gh-box" id="gh-box">
+          <summary>远程采样（GitHub Actions）</summary>
+          <form class="gh-config" onsubmit="return false">
+            <label>仓库 <input type="text" id="gh-repo" placeholder="owner/repo" autocomplete="off"></label>
+            <label>Token <input type="password" id="gh-token" placeholder="repo 或 workflow 权限" autocomplete="off"></label>
+            <button class="btn" id="btn-gh-save">保存设置</button>
+          </form>
+          <div class="gh-note">Token 只保存在本浏览器（localStorage），不会写入任何文件。不填 Token 时可打开 Actions 页面手动运行（workflow_dispatch 已启用）。</div>
+          <div class="gh-action">
+            <button class="btn" id="btn-gh-run" hidden>在 GitHub 触发采样</button>
+            <a class="gh-open" id="gh-open" href="#" target="_blank" rel="noopener">打开 GitHub Actions 手动运行</a>
+            <span class="gh-status" id="gh-status"></span>
+          </div>
+        </details>
+        <table class="books-editor" id="books-editor">
+          <thead>
+            <tr>
+              <th style="width:40px">启用</th>
+              <th>书名</th>
+              <th>索书号</th>
+              <th>record_id（可选）</th>
+              <th style="width:76px">状态</th>
+              <th style="width:60px"></th>
+            </tr>
+          </thead>
+          <tbody id="books-tbody"></tbody>
+        </table>
+        <div class="helper-valid" id="helper-valid"></div>
+        <div class="helper-note" id="helper-draft-note" hidden>已载入浏览器中保存的书单草稿（未提交到仓库）。修改会自动保存；「重置为仓库书单」可丢弃草稿。</div>
+        <pre class="helper-output" id="helper-output"></pre>
+      </div>
+    </section>
+
+    <footer>
+      <span>图书难借吗 · 数据来源：上海图书馆馆藏书目查询系统（公开页面）</span>
+      <span id="footer-schedule">采样周期：—</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="vendor/echarts.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
