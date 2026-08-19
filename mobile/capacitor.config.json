@@ -1,0 +1,8 @@
+{
+  "appId": "com.bbt.app",
+  "appName": "图书难借吗",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
