@@ -110,7 +110,27 @@ node src/index.js prune --before 2026-06-01                # 删除 6 月前的�
 node src/index.js prune --dates 2026-08-01,2026-08-02      # 删除指定日期
 ```
 
-## 五、看板功能
+## 五、安卓 App（可选，独立运行）
+
+也可以把项目打包成安卓 APK：**抓取直接在手机上执行，数据只存在手机本地**，与网页端/GitHub 互不影响。App 内嵌同一套看板 UI 与采样器代码（Capacitor 壳 + sampler 同构核心），后续改解析规则或看板样式，网页端和 App 同时生效。
+
+```bash
+cd mobile
+npm install
+npm run build        # 拷贝 docs/ → www/，打包 sampler 核心，同步到安卓工程
+npm run open         # 打开 Android Studio，Run 到真机/模拟器
+# 或命令行出包（需本机 Android SDK + JDK 17）：
+cd android && ./gradlew assembleDebug
+# 产物：mobile/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+- **依赖环境**：Android Studio（含 Android SDK）+ JDK 17，仅构建时需要
+- **采样**：打开 App 时若今天还没采样会自动补采一次（遵循 `config.json` 的周期设置）；书单助手里的「重新采样」按钮可强制立即采样，日志实时显示
+- **数据**：存储在 App 私有目录（Capacitor Filesystem）；首次启动使用 APK 内置的种子数据，本机采样后自动覆盖；卸载 App 数据即清除
+- **书单**：书单助手里的按钮在 App 内变为「保存到本机」，保存后下次采样生效，无需提交仓库
+- **验证码**：若触发上图人机验证，App 会跳转到验证页，手动完成滑块后按系统返回键回到 App，再点一次「重新采样」即可
+
+## 六、看板功能
 
 - **难借分**（0–100，越高越难借）= 在架率（按册数折减）+ 周末落差（周末样本 ≥5 次才计，占 20%；不足则在架率独占 100%）+ 连续借空加分（连续 0 册在架 ≥3/≥7/≥14 天加 5/10/20 分，封顶 100）。册数折减：平均普通外借约 1 册 ×0.6 / 约 2 册 ×0.8 / 3–4 册 ×0.9 / ≥5 册 ×1.0（同在架率下册数越少分越高）。配三档评级：随手可借 / 需要蹲点 / 极其抢手。指标按**普通外借册**口径计算（保存资料、参考外借、仅供阅览不计入；无普通外借册的书显示「仅馆内阅览」，不出分；采样不足 3 次暂不出分）
 - **当前可借情况**：顶部按最新一次采样把书目分为「现在可外借」「全部借出（可蹲点）」「仅馆内阅览」三组，点击书名可定位到对应书卡；从「不可借」变为「可借」的书带「新可借」标记（记录存浏览器 localStorage，超过 30 天未访问不提示）
@@ -120,7 +140,7 @@ node src/index.js prune --dates 2026-08-01,2026-08-02      # 删除指定日期
 - **书单助手**：自动载入当前追踪书目，可增删、启用/禁用、编辑；分组以分段表格呈现（点组名重命名、输入已有组名即合并、可解散分组，桌面端拖动 ⠿ 手柄调序/换组）；索书号随改随校验（标红即有问题）；所有修改自动保存在浏览器（localStorage），刷新数据不会丢失，「重置为仓库书单」可丢弃草稿。点「下载 books.txt」直接校验并下载（静态页面不直接改仓库，需人工提交）。「刷新数据」按钮：本地服务器（`node server.js`）下为「重新采样」，真实执行一次采样；静态托管（GitHub Pages）下重新拉取仓库数据，并可用「远程采样」入口触发 GitHub Actions（workflow_dispatch，也可在 Actions 页面手动点 Run workflow）
 - **历史数据栏**：勾选特定日期或设置「删除早于某日」，生成 `prune.json` 提交到 `docs/data/`，下次采样自动清理
 
-## 六、目录结构
+## 七、目录结构
 
 ```
 ├── books.txt                 # 追踪书单（唯一权威来源）
@@ -128,7 +148,8 @@ node src/index.js prune --dates 2026-08-01,2026-08-02      # 删除指定日期
 ├── server.js                 # 本地看板服务器（零依赖，可触发真实采样）
 ├── .github/workflows/        # 定时采样 workflow
 ├── sampler/                  # 采样器（Node.js ≥ 20，依赖仅 cheerio）
-│   └── src/                  # client(抓取) parsers(解析) captcha(过码) store(存储) …
+│   └── src/                  # client(抓取) parsers(解析) run-sampling(主流程) platform(平台抽象) …
+├── mobile/                   # 安卓 App（Capacitor）：build.mjs 打包 docs/+sampler 核心 → APK
 └── docs/                     # GitHub Pages 站点
     ├── index.html / app.js / styles.css / vendor/echarts.min.js
     └── data/                 # 采样数据（index.json + history/*.json）

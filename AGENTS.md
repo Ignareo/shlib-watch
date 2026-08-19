@@ -16,8 +16,10 @@ books.txt（书单）→ sampler 抓取馆藏 → docs/data/*.json（git 提交�
 - `config.json` — 采样周期（schedule）、请求限速（request）、git 自动提交（git.autoCommit/autoPush）配置
 - `server.js` — 本地看板服务器（Node ≥20，**零依赖**，ESM）。托管 `docs/` + `POST /api/sample`（执行采样）+ `GET /api/sample/status`（进度）。环境变量：`PORT`（默认 8765）、`SAMPLE_CMD`（覆盖采样命令，测试用）
 - `sampler/` — 采样器（Node ≥20，ESM，唯一依赖 cheerio）
-  - `src/index.js` CLI 入口（sample/prune/check）；`client.js` HTTP（限速/重试/验证码识别）；`parsers.js` HTML 解析；`normalize.js` 状态归一化；`books.js` books.txt 解析 + record_id 匹配；`store.js` JSON 读写 + prune；`git.js` 采样后自动 commit/push；`captcha.js` Playwright 人工过码；`duedate.js` 借出册预计归还日期补查
-  - `test/run.js` 手写的 node:assert 单测（fixture HTML 驱动，无测试框架）
+  - `src/index.js` CLI 入口（sample/prune/check，薄壳）；`run-sampling.js` 采样主流程（**两端共用**）；`platform.js` **平台抽象**（Node 实现；接口约定见文件头注释）；`client.js` HTTP（限速/重试/验证码识别，fetch 与 cookie 策略经 platform 注入）；`parsers.js` HTML 解析；`normalize.js` 状态归一化；`books.js` books.txt 解析（`parseBooksText` 纯文本入参）+ record_id 匹配；`store.js` JSON 读写（`createStore(platform)` 工厂）+ prune；`git.js` 采样后自动 commit/push（仅 Node）；`captcha.js` Playwright 人工过码（仅 Node）；`duedate.js` 借出册预计归还日期补查
+  - **核心同构约定**：`run-sampling/parsers/normalize/books/store/record-cache/schedule/duedate/client` 禁止 import `node:*`，一切 I/O 走 platform 注入；新增平台相关逻辑一律加在 platform 接口上，不要写进核心模块
+  - `test/run.js` 手写的 node:assert 单测（fixture HTML 驱动，无测试框架；含内存 platform 的 runSampling 端到端用例）
+- `mobile/` — 安卓 App（Capacitor 7）：`sampler-entry.js` App 端 platform 实现（CapacitorHttp 绕 CORS / Filesystem 存储 / WebView 内过码，暴露 `window.BbtApp`）；`build.mjs` 构建（拷 docs/ → www/ + esbuild 打 sampler 核心 + cap sync）；`android/` 原生工程；`www/` 为构建产物（已 gitignore）
 - `docs/` — GitHub Pages 站点（原生 HTML/CSS/JS + vendored ECharts，**无框架无构建**）
   - `app.js` 全部前端逻辑（看板渲染、难借分计算、书单助手、历史清理）
   - `data/index.json` 书目索引 + 分馆列表；`data/history/{bookId}.json` 每书采样历史
@@ -31,11 +33,13 @@ node server.js                        # 本地看板 http://localhost:8765（书
 cd sampler && npm install && npm test # 运行单测（改动 sampler 后必须跑）
 cd sampler && npm run sample:force    # 强制采样一次（会请求真实网站并自动 git commit+push）
 cd sampler && npm run check           # 查看今天是否为采样日
+cd mobile && npm install && npm run build  # 构建安卓工程（APK 需 Android Studio / gradle assembleDebug）
 ```
 
 ## 关键约定
 
 - **难借分**只在前端（docs/app.js `computeStats`）即时计算，不持久化：在架率按册数折减（约 1 册 ×0.6 / 2 册 ×0.8 / 3–4 册 ×0.9 / ≥5 册 ×1.0）；周末样本 ≥5 次时启用「在架率 80 + 周末落差 20」，不足则在架率独占 100 分；最新连续 0 册在架 ≥3/≥7/≥14 天加 5/10/20 分，封顶 100。采样 <3 次不出分，三档阈值 35/65。口径为**普通外借册**：circulationType 含"保存"/"仅供阅览"/"参考外借"的册不计入分母；无普通外借册的书显示「仅馆内阅览」
+- **App 模式**（`docs/app.js` 顶部 `isNative` 检测 `window.Capacitor` + `window.BbtApp`）：`fetchJson("data/*")` 分流到本机 Filesystem（读不到时回退 APK 内置种子）；「刷新数据」变为本机「重新采样」；「下载 books.txt」变为「保存到本机」；隐藏 GitHub Actions 区；App 打开时今天无样本则自动补采（周期判断在 sampler 核心，非采样日自动跳过；手动点为强制）。**网页端 `vendor/sampler-bundle.js` 恒 404，属预期**
 - **观测口径默认淮海路馆＋东馆**（前端 `mainBranches()`），用户可在「观测口径」chips 勾选分馆（偏好存 localStorage 键 `branch-prefs`，分馆名数组；无偏好/空偏好/偏好全部失效时回落默认，默认无匹配返回 null = 全部分馆），采样时抓取全部分馆
 - 借阅类型分桶（前端 `bucketOf()`）：含"参考外借"→橙（馆内借读）；含"保存"/"仅供阅览"→灰；含"普通外借"或 null→绿
 - index.json 中 `callNumber` 兼容两种形态：字符串（单索书号）或数组（多卷册），前端用 `callNumberText()` 统一处理
@@ -48,6 +52,7 @@ cd sampler && npm run check           # 查看今天是否为采样日
 
 ## 已知问题 / 注意事项
 
+- App 端待真机实测点：① CapacitorHttp 的重定向 URL（`response.url`）与 form POST 行为；② 验证码 WebView 跳转后 cookie 是否被原生层共享；③ 手机网络 IP 触发风控的频率可能高于家庭宽带（可调大 config.json `request.intervalMs`）
 - 借出册 copy 级新增 `itemId` / `dueDate` 字段：itemId 来自馆藏页「预计归还时间」组件的 data-itemid，dueDate 由采样时补查 `AJAX/JSON?method=itemReturnDate` 接口回填（仅借出册发请求，失败置 null）；`rawStatus` 已在解析层剔除内嵌 JS（`cleanStatusText`）
 - 元数据回填：resolve 缓存命中时优先用 `.cache/records.json` 里存的 meta 回填 index.json；缓存也没有则补抓一次记录页（`parseRecordMetadata`）回填并写回缓存。缓存值兼容旧字符串与新对象 `{recordId, meta}` 两种形态
 - 触发人机验证时 sampler 会弹 Playwright 窗口需人工过码（需 `npm install playwright && npx playwright install chromium`）
