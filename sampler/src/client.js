@@ -1,15 +1,22 @@
 // HTTP 客户端：请求上海图书馆 VuFind 目录系统
 // 负责：请求间隔控制、超时、重试、反爬验证页识别、会话 Cookie 复用
-import fs from "node:fs";
-import path from "node:path";
-import { CACHE_DIR } from "./paths.js";
-
+// I/O 经 platform 注入（见 platform.js）：options.platform 缺省为无持久化的浏览器安全实现，
+// Node 端由调用方传入 nodePlatform（会话 Cookie 存 .cache/session.json），
+// App 端由 mobile/sampler-entry.js 传入（cookie 交原生层管理）
 export const BASE_URL = "https://vufind.library.sh.cn";
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 
-const SESSION_FILE = path.resolve(process.cwd(), ".cache/session.json");
+const SESSION_FILE = ".cache/session.json";
+
+// 缺省平台：无会话持久化、手动 cookie 管理（行为同 Node 缺省）
+const defaultPlatform = {
+  fetch: (...args) => globalThis.fetch(...args),
+  manageCookies: true,
+  readText: null,
+  writeText: null,
+};
 
 export class CaptchaRequiredError extends Error {
   constructor(url) {
@@ -33,19 +40,21 @@ function sleep(ms) {
 
 export class LibraryClient {
   constructor(options = {}) {
+    this.platform = options.platform ?? defaultPlatform;
     this.baseUrl = (options.baseUrl ?? BASE_URL).replace(/\/$/, "");
     this.intervalMs = options.intervalMs ?? 3000;
     this.timeoutMs = options.timeoutMs ?? 25000;
     this.retries = options.retries ?? 3;
     this.cookieHeader = "";
     this.lastRequestAt = 0;
-    this.loadSession();
+    this.ready = this.loadSession(); // 首次请求前 await，保证会话已恢复
   }
 
-  loadSession() {
+  async loadSession() {
+    if (!this.platform.readText) return;
     try {
-      const raw = JSON.parse(fs.readFileSync(SESSION_FILE, "utf8"));
-      if (raw.cookieHeader) {
+      const raw = JSON.parse(await this.platform.readText(SESSION_FILE));
+      if (raw?.cookieHeader) {
         this.cookieHeader = raw.cookieHeader;
         console.log(`[client] 复用已保存的会话 Cookie（保存于 ${raw.savedAt}）`);
       }
@@ -54,10 +63,10 @@ export class LibraryClient {
     }
   }
 
-  saveSession(cookieHeader) {
+  async saveSession(cookieHeader) {
     this.cookieHeader = cookieHeader;
-    fs.mkdirSync(path.dirname(SESSION_FILE), { recursive: true });
-    fs.writeFileSync(
+    if (!this.platform.writeText) return;
+    await this.platform.writeText(
       SESSION_FILE,
       JSON.stringify({ savedAt: new Date().toISOString(), cookieHeader }, null, 2)
     );
@@ -70,7 +79,11 @@ export class LibraryClient {
   }
 
   async request(pathAndQuery, { method = "GET", body = null } = {}) {
+    await this.ready;
     const url = `${this.baseUrl}${pathAndQuery}`;
+    const fetchImpl = this.platform.fetch ?? globalThis.fetch;
+    // App 端（manageCookies=false）cookie 由原生层自动管理，不手动拼 Cookie 头
+    const manageCookies = this.platform.manageCookies !== false;
     let lastError = null;
 
     for (let attempt = 1; attempt <= this.retries; attempt++) {
@@ -78,7 +91,7 @@ export class LibraryClient {
       if (attempt === 1) await this.pace();
       const start = Date.now();
       try {
-        const response = await fetch(url, {
+        const response = await fetchImpl(url, {
           method,
           redirect: "follow",
           headers: {
@@ -87,7 +100,7 @@ export class LibraryClient {
               "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "zh-CN,zh;q=0.9",
             Referer: `${this.baseUrl}/`,
-            ...(this.cookieHeader ? { Cookie: this.cookieHeader } : {}),
+            ...(manageCookies && this.cookieHeader ? { Cookie: this.cookieHeader } : {}),
             ...(method === "POST"
               ? {
                   "Content-Type":
@@ -101,18 +114,20 @@ export class LibraryClient {
         });
 
         // 收集响应里的 Set-Cookie（验证码通过后风控会种 Cookie）
-        const setCookies =
-          response.headers.getSetCookie?.() ??
-          (response.headers.get("set-cookie")
-            ? [response.headers.get("set-cookie")]
-            : []);
-        if (setCookies.length) {
-          const pairs = setCookies.map((c) => c.split(";")[0]);
-          const existing = new Set(
-            (this.cookieHeader ? this.cookieHeader.split("; ") : []).filter(Boolean)
-          );
-          for (const p of pairs) existing.add(p);
-          this.cookieHeader = [...existing].join("; ");
+        if (manageCookies) {
+          const setCookies =
+            response.headers.getSetCookie?.() ??
+            (response.headers.get("set-cookie")
+              ? [response.headers.get("set-cookie")]
+              : []);
+          if (setCookies.length) {
+            const pairs = setCookies.map((c) => c.split(";")[0]);
+            const existing = new Set(
+              (this.cookieHeader ? this.cookieHeader.split("; ") : []).filter(Boolean)
+            );
+            for (const p of pairs) existing.add(p);
+            this.cookieHeader = [...existing].join("; ");
+          }
         }
 
         const finalUrl = response.url || url;

@@ -1,15 +1,11 @@
 // record_id 缓存：按索书号缓存已解析出的 record_id，避免每次采样都走慢检索
 // 缓存值兼容两种形态：字符串（旧格式，仅 record_id）
 // 或对象 { recordId, meta }（meta 含 authors/publisher 等元数据，供 index.json 回填）
-import fs from "node:fs";
-import path from "node:path";
-import { CACHE_DIR } from "./paths.js";
+// I/O 经 platform 注入（见 platform.js），缓存文件为逻辑路径 .cache/records.json
 
-const CACHE_FILE = path.join(CACHE_DIR, "records.json");
-
-export function loadRecordCache() {
+export async function loadRecordCache(platform) {
   try {
-    const raw = JSON.parse(fs.readFileSync(CACHE_FILE, "utf8"));
+    const raw = JSON.parse(await platform.readText(".cache/records.json"));
     if (raw && typeof raw === "object") return raw;
   } catch {
     /* 无缓存或损坏 */
@@ -17,9 +13,8 @@ export function loadRecordCache() {
   return {};
 }
 
-export function saveRecordCache(cache) {
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
-  fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
+export async function saveRecordCache(platform, cache) {
+  await platform.writeText(".cache/records.json", JSON.stringify(cache, null, 2));
 }
 
 export function cacheKey(book) {

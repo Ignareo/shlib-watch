@@ -1,16 +1,15 @@
 // books.txt 解析与 record_id 自动匹配
-import fs from "node:fs";
+// 本模块为纯逻辑（无 Node API），两端（Node / App）共用；读文件由调用方负责
 import { cacheKey, readCacheEntry } from "./record-cache.js";
 
 // 每行：书名 | 索书号 | record_id（可选）| 标签（可选，逗号分隔）
 // 也支持只填索书号：| 索书号
 // 索书号字段支持多卷册：用 ; 或全角 ；分隔多个索书号（此时第三列 record_id 不适用，会被忽略）
 // 组头行：## 组名 —— 作用于其后的所有书，直到下一个组头；「##」空组头表示回到未分组
-export function parseBooksFile(filePath) {
-  const raw = fs.readFileSync(filePath, "utf8");
+export function parseBooksText(raw) {
   const books = [];
   let currentGroup = null;
-  for (const [index, lineRaw] of raw.split(/\r?\n/).entries()) {
+  for (const [index, lineRaw] of String(raw ?? "").split(/\r?\n/).entries()) {
     const line = lineRaw.trim();
     if (!line) continue;
     if (line.startsWith("##")) {
@@ -50,7 +49,7 @@ export function parseBooksFile(filePath) {
 
 // 稳定 id 分配：book id 直接对应历史文件 data/history/{id}.json，
 // 按行号分配的 id 会在书单增删/调序/合并行后错位，污染历史数据（曾发生：汉口路上 b4 显示上海文学散步的旧采样）。
-// 采样前对 parseBooksFile 的结果调用：
+// 采样前对 parseBooksText 的结果调用：
 //   1. 索书号集合与现有 index.json 某书一致 → 沿用其 id（改书名/调行序不影响）
 //   2. 否则书名在两侧都唯一 → 沿用其 id（容忍修正索书号笔误）
 //   3. 全新书目 → 分配未占用的最小新 id；不复用任何存在过历史文件的 id（含已删除的书），避免旧数据串书

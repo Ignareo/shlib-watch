@@ -7,19 +7,27 @@ import assert from "node:assert";
 import { parseSearchResults, parseHoldings, groupByBranch, cleanStatusText, parseRecordMetadata } from "../src/parsers.js";
 import { classifyAvailability } from "../src/normalize.js";
 import { isSamplingDay } from "../src/schedule.js";
-import { parseBooksFile, resolveBook, assignStableIds } from "../src/books.js";
+import { parseBooksText, resolveBook, assignStableIds } from "../src/books.js";
 import { parseReturnDateResponse, fillDueDates } from "../src/duedate.js";
 import { readCacheEntry, pickCacheMeta } from "../src/record-cache.js";
+import { LibraryClient } from "../src/client.js";
+import { createStore } from "../src/store.js";
+import { runSampling } from "../src/run-sampling.js";
 
 let passed = 0;
+const pending = []; // 异步用例的 promise，汇总前统一 await
 function test(name, fn) {
-  try {
-    fn();
-    passed++;
-    console.log(`  ✓ ${name}`);
-  } catch (error) {
+  const ok = () => { passed++; console.log(`  ✓ ${name}`); };
+  const fail = (error) => {
     console.error(`  ✗ ${name}\n    ${error.message}`);
     process.exitCode = 1;
+  };
+  try {
+    const result = fn();
+    if (result instanceof Promise) pending.push(result.then(ok, fail));
+    else ok();
+  } catch (error) {
+    fail(error);
   }
 }
 
@@ -271,9 +279,7 @@ test("monthly 只在指定日采样", () => {
 
 console.log("\n[5] 书单解析");
 test("books.txt 格式解析与容错", () => {
-  const tmp = path.join(os.tmpdir(), `books-${Date.now()}.txt`);
-  fs.writeFileSync(tmp, "# 注释\n城市研究 | C912.81/4422\n活着 | I247.5/8030-23 | abc12345-aaaa\n| TU-092.2/4443\n坏行没有分隔符\n\n");
-  const books = parseBooksFile(tmp);
+  const books = parseBooksText("# 注释\n城市研究 | C912.81/4422\n活着 | I247.5/8030-23 | abc12345-aaaa\n| TU-092.2/4443\n坏行没有分隔符\n\n");
   assert.strictEqual(books.length, 3);
   assert.strictEqual(books[0].id, "b1");
   assert.strictEqual(books[0].recordId, null);
@@ -281,41 +287,31 @@ test("books.txt 格式解析与容错", () => {
   assert.strictEqual(books[2].title, null);
   assert.strictEqual(books[2].callNumber, "TU-092.2/4443");
   assert.deepStrictEqual(books[0].callNumbers, ["C912.81/4422"]); // 单索书号行向后兼容
-  fs.rmSync(tmp);
 });
 
 test("多索书号（多卷册）解析：分号、全角分号、空格容忍", () => {
-  const tmp = path.join(os.tmpdir(), `books-multi-${Date.now()}.txt`);
-  fs.writeFileSync(
-    tmp,
+  const books = parseBooksText(
     [
       "中国建筑史 | TU-092/3965-20; TU-092/3965-17; TU-092/3965-19",
       "穿墙透壁 | TU-092.2/4443；TU-092.2/4443-2",
       "半个分号也容忍 |  A/1 ; ; B/2 ；", // 空段被丢弃
     ].join("\n")
   );
-  const books = parseBooksFile(tmp);
   assert.strictEqual(books.length, 3);
   assert.deepStrictEqual(books[0].callNumbers, ["TU-092/3965-20", "TU-092/3965-17", "TU-092/3965-19"]);
   assert.strictEqual(books[0].callNumber, "TU-092/3965-20; TU-092/3965-17; TU-092/3965-19"); // 拼接字符串
   assert.deepStrictEqual(books[1].callNumbers, ["TU-092.2/4443", "TU-092.2/4443-2"]);
   assert.deepStrictEqual(books[2].callNumbers, ["A/1", "B/2"]);
-  fs.rmSync(tmp);
 });
 
 test("多索书号行的 record_id 被忽略", () => {
-  const tmp = path.join(os.tmpdir(), `books-rid-${Date.now()}.txt`);
-  fs.writeFileSync(tmp, "中国建筑史 | TU-092/3965-20; TU-092/3965-17 | abc12345-aaaa\n单索书号 | TU-092/3965-20 | abc12345-bbbb\n");
-  const books = parseBooksFile(tmp);
+  const books = parseBooksText("中国建筑史 | TU-092/3965-20; TU-092/3965-17 | abc12345-aaaa\n单索书号 | TU-092/3965-20 | abc12345-bbbb\n");
   assert.strictEqual(books[0].recordId, null); // 多卷册行忽略第三列
   assert.strictEqual(books[1].recordId, "abc12345-bbbb"); // 单索书号行不受影响
-  fs.rmSync(tmp);
 });
 
 test("组头行解析：## 组名作用于其后书目，空组头回到未分组", () => {
-  const tmp = path.join(os.tmpdir(), `books-group-${Date.now()}.txt`);
-  fs.writeFileSync(
-    tmp,
+  const books = parseBooksText(
     [
       "# 普通注释行不算组头",
       "无组书 | A/1",
@@ -328,20 +324,16 @@ test("组头行解析：## 组名作用于其后书目，空组头回到未分�
       "又是无组书 | B/2",
     ].join("\n")
   );
-  const books = parseBooksFile(tmp);
   assert.strictEqual(books.length, 5);
   assert.strictEqual(books[0].group, null); // 组头前的书无分组
   assert.strictEqual(books[1].group, "古建筑");
   assert.strictEqual(books[2].group, "古建筑");
   assert.strictEqual(books[3].group, "香港");
   assert.strictEqual(books[4].group, null); // 空组头重置
-  fs.rmSync(tmp);
 });
 
 test("第四列标签解析：逗号 / 全角逗号分隔，空段丢弃，旧格式行为不变", () => {
-  const tmp = path.join(os.tmpdir(), `books-tags-${Date.now()}.txt`);
-  fs.writeFileSync(
-    tmp,
+  const books = parseBooksText(
     [
       "## 上海城市行走",
       "上海文学散步 | I209.951/4122 | abc12345-aaaa | 散步,城市",
@@ -350,7 +342,6 @@ test("第四列标签解析：逗号 / 全角逗号分隔，空段丢弃，旧�
       "多卷册带标签 | D/4; D/5 | abc12345-bbbb | 合集", // record_id 被忽略但标签保留
     ].join("\n")
   );
-  const books = parseBooksFile(tmp);
   assert.deepStrictEqual(books[0].tags, ["散步", "城市"]);
   assert.strictEqual(books[0].group, "上海城市行走");
   assert.deepStrictEqual(books[1].tags, ["散步", "历史"]);
@@ -358,7 +349,6 @@ test("第四列标签解析：逗号 / 全角逗号分隔，空段丢弃，旧�
   assert.strictEqual(books[2].group, "上海城市行走");
   assert.deepStrictEqual(books[3].tags, ["合集"]);
   assert.strictEqual(books[3].recordId, null); // 多索书号行第三列仍被忽略
-  fs.rmSync(tmp);
 });
 
 console.log("\n[6] 历史数据清理");
@@ -377,12 +367,14 @@ test("prune 按日期与 before 删除", async () => {
       { ts: "2026-08-01T10:00:00+08:00", date: "2026-08-01", weekday: 6, branches: {} },
     ],
   }));
-  process.env.BBT_DATA_DIR = dataDir; // store.js 支持用环境变量覆盖数据目录
+  process.env.BBT_DATA_DIR = dataDir; // platform.js 支持用环境变量覆盖数据目录（需在 import 前设置）
   try {
-    const { applyPrune, loadHistory } = await import("../src/store.js");
-    const removed = applyPrune({ dates: ["2026-08-01"], before: "2026-06-01" });
+    const { nodePlatform } = await import("../src/platform.js");
+    const { createStore } = await import("../src/store.js");
+    const store = createStore(nodePlatform);
+    const removed = await store.applyPrune({ dates: ["2026-08-01"], before: "2026-06-01" });
     assert.strictEqual(removed, 2); // 05-01 被 before 删除，08-01 被 dates 删除
-    const history = loadHistory("b1");
+    const history = await store.loadHistory("b1");
     assert.strictEqual(history.samples.length, 1);
     assert.strictEqual(history.samples[0].date, "2026-06-15");
   } finally {
@@ -507,4 +499,82 @@ test("assignStableIds：无既有数据时保持行号 id", () => {
   assert.deepStrictEqual(books.map((b) => b.id), ["b1", "b2"]);
 });
 
+// ---------- [8] runSampling 端到端（内存 platform + stub fetch） ----------
+// 这条用例同时覆盖 App 端将要复用的完整采样链路：resolve → 馆藏 → 聚合 → 写 index/history
+function memoryPlatform(fetchStub) {
+  const files = new Map();
+  return {
+    files,
+    fetch: fetchStub,
+    manageCookies: true,
+    readText: async (p) => (files.has(p) ? files.get(p) : null),
+    writeText: async (p, t) => { files.set(p, t); },
+    removeFile: async (p) => { files.delete(p); },
+    listJsonIds: async (dir) =>
+      [...files.keys()]
+        .filter((k) => k.startsWith(`${dir}/`) && k.endsWith(".json"))
+        .map((k) => k.slice(dir.length + 1, -".json".length)),
+    log: () => {}, warn: () => {},
+  };
+}
+
+const fakeResponse = (url, body) => ({
+  ok: true, status: 200, statusText: "OK", url,
+  headers: { getSetCookie: () => [], get: () => null },
+  text: async () => body,
+});
+
+console.log("\n[8] runSampling 端到端（内存 platform）");
+test("完整采样链路：检索命中 → 抓馆藏 → 写 index/history/缓存；同日重采覆盖而非追加", async () => {
+  const stubFetch = async (url) => {
+    if (url.includes("/Search/Results")) return fakeResponse(url, SEARCH_HTML);
+    if (url.includes("/AjaxTab")) return fakeResponse(url, HOLDINGS_HTML);
+    if (url.includes("itemReturnDate")) return fakeResponse(url, '{"status":true,"data":"2026-09-01"}');
+    if (url.includes("/Record/")) return fakeResponse(url, RECORD_PAGE_HTML);
+    throw new Error(`未预期的请求：${url}`);
+  };
+  const platform = memoryPlatform(stubFetch);
+  const client = new LibraryClient({ intervalMs: 0, platform });
+  const store = createStore(platform);
+  const params = {
+    platform, client, store,
+    config: { schedule: { frequency: "daily" } },
+    booksText: "城市研究 | C912.81/4422",
+    force: true,
+  };
+
+  const result = await runSampling(params);
+  assert.strictEqual(result.sampled, 1);
+  assert.strictEqual(result.total, 1);
+
+  // 索引：record_id 来自检索结果，分馆列表被收集
+  const index = JSON.parse(platform.files.get("data/index.json"));
+  assert.strictEqual(index.books.length, 1);
+  assert.strictEqual(index.books[0].id, "b1");
+  assert.strictEqual(index.books[0].recordId, "abc12345-1111-4000-8000-aaaaaaaaaaaa");
+  assert.strictEqual(index.books[0].resolveStatus, "resolved");
+  assert.deepStrictEqual(index.branches, ["上海图书馆", "浦东新区图书馆"]);
+
+  // 历史：一条样本，分馆统计正确
+  const history = JSON.parse(platform.files.get("data/history/b1.json"));
+  assert.strictEqual(history.samples.length, 1);
+  const sample = history.samples[0];
+  assert.strictEqual(sample.branches["上海图书馆"].total, 3);
+  assert.strictEqual(sample.branches["上海图书馆"].available, 1);
+  assert.strictEqual(sample.branches["浦东新区图书馆"].available, 1);
+
+  // record_id 缓存已写入
+  const cache = JSON.parse(platform.files.get(".cache/records.json"));
+  assert.strictEqual(cache["城市研究|C912.81/4422"].recordId, "abc12345-1111-4000-8000-aaaaaaaaaaaa");
+
+  // 同日重采：覆盖而非追加，书 id 保持稳定
+  const again = await runSampling(params);
+  assert.strictEqual(again.sampled, 1);
+  const history2 = JSON.parse(platform.files.get("data/history/b1.json"));
+  assert.strictEqual(history2.samples.length, 1);
+  const index2 = JSON.parse(platform.files.get("data/index.json"));
+  assert.strictEqual(index2.books[0].id, "b1");
+});
+
+await Promise.all(pending); // 等所有异步用例结束再汇总
 console.log(`\n${process.exitCode ? "存在失败用例" : `全部通过（${passed} 项）`}\n`);
