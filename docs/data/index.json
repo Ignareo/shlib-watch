@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-19T01:00:00.187Z",
+  "updatedAt": "2026-08-19T06:57:20.499Z",
   "schedule": "每天",
   "books": [
     {
@@ -18,7 +18,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b1.json",
-      "group": "理解中国"
+      "group": "中国"
     },
     {
       "id": "b2",
@@ -39,7 +39,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b2.json",
-      "group": "理解中国"
+      "group": "建筑"
     },
     {
       "id": "b3",
@@ -57,7 +57,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b3.json",
-      "group": "上海城市行走"
+      "group": "上海"
     },
     {
       "id": "b4",
@@ -75,7 +75,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b4.json",
-      "group": "上海城市行走"
+      "group": "上海"
     },
     {
       "id": "b5",
@@ -93,7 +93,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b5.json",
-      "group": "文明现场"
+      "group": "历史"
     },
     {
       "id": "b6",
@@ -111,7 +111,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b6.json",
-      "group": "古建筑"
+      "group": "建筑"
     },
     {
       "id": "b7",
@@ -129,7 +129,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b7.json",
-      "group": "古建筑"
+      "group": "建筑"
     },
     {
       "id": "b8",
@@ -151,7 +151,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b8.json",
-      "group": "古建筑"
+      "group": "建筑"
     },
     {
       "id": "b9",
@@ -169,7 +169,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b9.json",
-      "group": "古建筑"
+      "group": "香港"
     },
     {
       "id": "b10",
@@ -187,7 +187,7 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b10.json",
-      "group": "古建筑"
+      "group": "建筑"
     },
     {
       "id": "b11",
@@ -259,7 +259,63 @@
       "materialType": "图书",
       "candidates": [],
       "historyFile": "data/history/b14.json",
-      "group": "植物"
+      "group": "自然"
+    },
+    {
+      "id": "b15",
+      "title": "中国人的菜市场",
+      "callNumber": "TS971.2/4704-1",
+      "recordId": "dab4509d-3360-43af-af33-41fe5d2a80d6",
+      "recordUrl": "https://vufind.library.sh.cn/Record/dab4509d-3360-43af-af33-41fe5d2a80d6",
+      "resolveStatus": "resolved",
+      "needsReview": false,
+      "authors": [
+        "老刘"
+      ],
+      "publisher": "中国友谊出版公司",
+      "publishedYear": "2024",
+      "materialType": "图书",
+      "candidates": [
+        {
+          "recordId": "dab4509d-3360-43af-af33-41fe5d2a80d6",
+          "title": "中国人的菜市场",
+          "callNumber": "TS971.2/4704-1",
+          "authors": [
+            "老刘"
+          ],
+          "publishedYear": "2024"
+        }
+      ],
+      "historyFile": "data/history/b15.json",
+      "group": "人文"
+    },
+    {
+      "id": "b16",
+      "title": "喵在江南",
+      "callNumber": "S829.3/2226",
+      "recordId": "ea96ccb3-7f5b-4b12-bce1-fa89bc79a3ff",
+      "recordUrl": "https://vufind.library.sh.cn/Record/ea96ccb3-7f5b-4b12-bce1-fa89bc79a3ff",
+      "resolveStatus": "resolved",
+      "needsReview": false,
+      "authors": [
+        "徐岩 (198?-)"
+      ],
+      "publisher": "人民邮电出版社",
+      "publishedYear": "2024",
+      "materialType": "图书",
+      "candidates": [
+        {
+          "recordId": "ea96ccb3-7f5b-4b12-bce1-fa89bc79a3ff",
+          "title": "喵在江南",
+          "callNumber": "S829.3/2226",
+          "authors": [
+            "徐岩 (198?-)"
+          ],
+          "publishedYear": "2024"
+        }
+      ],
+      "historyFile": "data/history/b16.json",
+      "group": "人文"
     }
   ],
   "branches": [
