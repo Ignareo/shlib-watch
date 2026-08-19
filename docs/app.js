@@ -309,18 +309,20 @@ function starsBlockHtml(stats, label) {
   );
 }
 
-// 触屏点击星星展开/收起计算说明；点页面其他位置关闭所有已展开的气泡
+// 触屏点击星星 / 在架率展开口径说明气泡；点页面其他位置关闭所有已展开的气泡
 function bindStarsTip(card) {
-  card.querySelector(".stars")?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    card.querySelector(".stars-tip")?.classList.toggle("open");
+  card.querySelectorAll(".stars, .rate").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      el.querySelector(".stars-tip")?.classList.toggle("open");
+    });
   });
 }
 document.addEventListener("click", () => {
   document.querySelectorAll(".stars-tip.open").forEach((tip) => tip.classList.remove("open"));
 });
 
-// 口径下最近一次有数据的采样汇总（构成色带/徽章/可借状态用）
+// 口径下最近一次有数据的采样汇总（可借分组 / 仅馆内阅览判定用）
 function latestCounts(bookId) {
   const names = mainBranches();
   const samples = bookSamples(bookId);
@@ -683,6 +685,16 @@ function buildBookCard(book, stats) {
       ? starsBlockHtml(stats, stats.samples >= 3 ? "易借指数" : "数据积累中")
       : `<div class="stars-na">—</div>`;
 
+  // 在架率块：与星级同属左栏评级指标；口径说明（采样次数 / 普通外借册）收成悬浮/点击气泡
+  const rateHtml =
+    !noOrdinary && stats
+      ? `<div class="rate" role="button" tabindex="0" aria-label="在架率口径说明">` +
+        `<div class="rate-num">${Math.round(stats.rate * 100)}%</div>` +
+        `<div class="rate-label">在架率</div>` +
+        `<div class="stars-tip">${stats.samples} 次采样 · 按普通外借册计<br><i>在架率 = 采样时口径内至少 1 册普通外借在架的比例</i></div>` +
+        `</div>`
+      : "";
+
   const metaBits = [
     `<span class="callnumber">${escapeHtml(callNumberText(book))}</span>`,
     book.authors?.length ? escapeHtml(book.authors.join("，")) : null,
@@ -703,44 +715,24 @@ function buildBookCard(book, stats) {
   } else if (!stats) {
     bodyHtml = `<div class="kv-row"><span class="k">状态</span><span class="v">该口径下暂无馆藏采样数据</span></div>`;
   } else {
-    // latest：普通外借口径的最新汇总（noOrdinary 时来自 latestCounts）
-    const latest = stats.latest;
-    // 文案区分「今天没了，可蹲点」（borrowed_out）和「只能去馆里看」（inhouse）
-    const statusHtml = noOrdinary
-      ? `<span class="v">仅馆内阅览 —— 只能去馆里看，馆藏均为保存 / 参考 / 阅览类资料，不可外借</span>`
-      : latest.available >= 1
-        ? `<span class="v ok">当前可借（普通外借在架 ${latest.available}/${latest.total} 册）</span>`
-        : latest.inLibrary >= 1
-          ? `<span class="v">今天借完了（0/${latest.total} 册普通外借在架），可蹲点；另有 ${latest.inLibrary} 册仅馆内阅览</span>`
-          : `<span class="v bad">今天借完了（0/${latest.total} 册普通外借在架），可蹲点</span>`;
-
-    let statsHtml;
-    if (!noOrdinary) {
-      const pct = (r) => (r === null ? "—" : `${Math.round(r * 100)}%`);
-      statsHtml = `
-      <div class="kv-row">
-        <span class="k">当前状态</span>${statusHtml}
-        <span class="k">在架率</span><span class="v">${pct(stats.rate)}（${stats.samples} 次采样，按普通外借册计）</span>
-      </div>
-      <div class="charts">
-        <div class="chart-box"><div class="chart-label">在架率走势（普通外借册）</div><div class="chart-trend" id="trend-${book.id}"></div></div>
-        <div class="chart-box"><div class="chart-label">工作日 / 周末</div><div class="chart-week" id="week-${book.id}"></div></div>
-      </div>`;
-    } else {
-      statsHtml = `<div class="kv-row"><span class="k">当前状态</span>${statusHtml}</div>`;
-    }
-
+    // 右栏只留行动信息：行动建议 → 分馆构成（主视觉）→ 趋势图表；「当前状态 / 构成色带徽章」已并入这两者，不再单列
     bodyHtml = `
       ${actionLineHtml(book)}
       ${branchRowsHtml(book)}
-      ${circulationHtml(latest)}
-      ${statsHtml}
+      ${
+        !noOrdinary
+          ? `<div class="charts">
+        <div class="chart-box"><div class="chart-label">在架率走势（普通外借册）</div><div class="chart-trend" id="trend-${book.id}"></div></div>
+        <div class="chart-box"><div class="chart-label">工作日 / 周末</div><div class="chart-week" id="week-${book.id}"></div></div>
+      </div>`
+          : ""
+      }
       ${!noOrdinary && stats.samples < 3 ? warmupRowHtml(stats) : ""}`;
   }
 
   card.innerHTML = `
     <div class="score-col">
-      <div>${starsHtml}</div>
+      <div>${starsHtml}${rateHtml}</div>
     </div>
     <div>
       <h3 class="book-title">${titleHtml}${newlyAvailable.has(book.id) ? `<span class="new-badge">新可借</span>` : ""}</h3>
@@ -885,41 +877,6 @@ function branchRowsHtml(book) {
   return `
     <div class="branch-rows">
       ${main.map(rowHtml).join("")}
-    </div>`;
-}
-
-// 借阅类型构成：堆叠色带 + 徽章行（按当前口径最新一次采样）
-function circulationHtml(counts) {
-  if (!counts || !counts.hasCopies) return "";
-  const normal = counts.total, ref = counts.ref, keep = counts.keep;
-  const all = normal + ref + keep;
-  if (!all) return "";
-
-  const segs = [
-    { n: normal, cls: "normal", label: "普通外借" },
-    { n: ref, cls: "ref", label: "参考外借" },
-    { n: keep, cls: "keep", label: "保存/阅览" },
-  ].filter((s) => s.n > 0);
-  const barHtml = segs
-    .map((s) => `<i class="seg ${s.cls}" style="flex-grow:${s.n}" title="${s.label} ${s.n} 册"></i>`)
-    .join("");
-
-  const badges = [
-    normal
-      ? `<span class="circ-badge normal" title="普通外借资料：可借回家">普通外借 · 可外借 ${counts.available}/${normal}</span>`
-      : "",
-    ref
-      ? `<span class="circ-badge ref" title="参考外借资料：仅限当日馆内借读，当天归还">参考外借 · 馆内借读 × ${ref}</span>`
-      : "",
-    keep
-      ? `<span class="circ-badge keep" title="保存资料 / 仅供阅览资料：保存资料或仅供馆内阅览，不外借">保存/阅览 × ${keep}</span>`
-      : "",
-  ].join("");
-
-  return `
-    <div class="circ-row">
-      <div class="circ-bar">${barHtml}</div>
-      <div class="circ-badges">${badges}</div>
     </div>`;
 }
 
