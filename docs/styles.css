@@ -97,6 +97,89 @@ body {
 .stat-cell .num small { font-size: 15px; color: var(--muted); font-family: var(--sans); }
 .stat-cell .label { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.05em; }
 
+/* ---------- 浮动目录（TOC）：一级默认折叠，点击展开二级 ---------- */
+/* PC：右侧悬浮面板，可用 » 收成竖排细条 */
+.toc {
+  position: fixed;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 184px;
+  max-height: 72vh;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 28px rgba(62, 48, 32, 0.14);
+  padding: 10px 12px 12px;
+  z-index: 60;
+  font-size: 13px;
+}
+.toc-head { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+.toc-title { font-family: var(--serif); font-weight: 700; color: var(--ink-strong); }
+.toc-fold, .toc-close { background: none; border: none; cursor: pointer; color: var(--faint); padding: 0 4px; }
+.toc-fold { margin-left: auto; font-size: 14px; }
+.toc-close { display: none; } /* 仅移动端抽屉用 */
+.toc.folded { width: auto; padding: 10px 7px; }
+.toc.folded .toc-head { flex-direction: column; }
+.toc.folded .toc-title { writing-mode: vertical-rl; letter-spacing: 0.2em; }
+.toc.folded #toc-nav { display: none; }
+.toc.folded .toc-fold { transform: rotate(180deg); margin: 6px 0 0; }
+.toc-group { margin: 2px 0; }
+.toc-l1, .toc-book { background: none; border: none; padding: 0; cursor: pointer; font: inherit; text-align: left; }
+.toc-l1 { display: flex; align-items: baseline; gap: 6px; width: 100%; padding: 3px 0; font-weight: 600; color: var(--ink-strong); }
+.toc-l1[data-group]::after { content: "▸"; margin-left: auto; color: var(--faint); font-size: 11px; }
+.toc-group.open .toc-l1[data-group]::after { content: "▾"; }
+.toc-count { color: var(--faint); font-family: var(--mono); font-size: 11px; }
+.toc-l2 { display: none; flex-direction: column; margin: 2px 0 4px 14px; }
+.toc-group.open .toc-l2 { display: flex; }
+.toc-book { color: var(--muted); padding: 2px 0; }
+.toc-l1:hover, .toc-book:hover { color: var(--accent); }
+.toc-fixed { border-top: 1px solid var(--surface); margin-top: 6px; padding-top: 6px; }
+.toc-fab, .toc-mask { display: none; }
+
+/* 移动端 / 窄屏：目录收进右下角悬浮按钮，点开为底部抽屉（带遮罩） */
+@media (max-width: 1023px) {
+  .toc {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    transform: none;
+    width: auto;
+    max-height: 62vh;
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+    padding: 14px 18px calc(16px + env(safe-area-inset-bottom));
+    display: none;
+  }
+  .toc.open { display: block; }
+  .toc.folded { width: auto; padding: 14px 18px calc(16px + env(safe-area-inset-bottom)); }
+  .toc.folded .toc-head { flex-direction: row; }
+  .toc.folded .toc-title { writing-mode: horizontal-tb; letter-spacing: normal; }
+  .toc.folded #toc-nav { display: block; }
+  .toc-fold { display: none; }
+  .toc-close { display: block; margin-left: auto; font-size: 20px; color: var(--muted); }
+  .toc-fab {
+    display: block;
+    position: fixed;
+    right: 14px;
+    bottom: 16px;
+    z-index: 55;
+    background: var(--ink-strong);
+    color: var(--card);
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(62, 48, 32, 0.25);
+  }
+  .toc-mask { display: block; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.25); z-index: 58; }
+}
+/* hidden 守卫放在最后：优先级持平 .toc.open / .toc-fab，靠顺序压过它们 */
+.toc[hidden], .toc-fab[hidden], .toc-mask[hidden] { display: none; }
+
 /* ---------- 当前可借情况 ---------- */
 .avail-board {
   background: var(--card);

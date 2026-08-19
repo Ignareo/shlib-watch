@@ -41,12 +41,13 @@ cd mobile && npm install && npm run build  # 构建安卓工程（APK 需 Androi
 - **易借指数**（UI 层，0–5 星，星越多越好借）由内部「难借分」换算：难借分只在前端（docs/app.js `computeStats`）即时计算，不持久化：在架率按册数折减（约 1 册 ×0.6 / 2 册 ×0.8 / 3–4 册 ×0.9 / ≥5 册 ×1.0）；周末样本 ≥5 次时启用「在架率 80 + 周末落差 20」，不足则在架率独占 100 分；最新连续 0 册在架 ≥3/≥7/≥14 天加 5/10/20 分，封顶 100。UI 换算 `starsOf`：(100 − 难借分) ÷ 20 四舍五入取整星。采样 <3 次不出星（显示「数据积累中」）。口径为**普通外借册**：circulationType 含"保存"/"仅供阅览"/"参考外借"的册不计入分母；无普通外借册的书显示「仅馆内阅览」
 - **App 模式**（`docs/app.js` 顶部 `isNative` 检测 `window.Capacitor` + `window.BbtApp`）：`fetchJson("data/*")` 分流到本机 Filesystem（读不到时回退 APK 内置种子）；「刷新数据」变为本机「重新采样」；「下载 books.txt」变为「保存到本机」；隐藏 GitHub Actions 区；App 打开时今天无样本则自动补采（周期判断在 sampler 核心，非采样日自动跳过；手动点为强制）。**网页端 `vendor/sampler-bundle.js` 恒 404，属预期**
 - **观测口径默认淮海路馆＋东馆**（前端 `mainBranches()`），用户可在「观测口径」chips 勾选分馆（偏好存 localStorage 键 `branch-prefs`，分馆名数组；无偏好/空偏好/偏好全部失效时回落默认，默认无匹配返回 null = 全部分馆），采样时抓取全部分馆。**书卡分馆小表（`branchRowsHtml`）与行动建议的网借提示只显示口径内分馆**（未勾选的一律不出现）；分馆行文案为「可外借 X/Y 册 · 馆内借读 Z 册」（X/Y=普通外借在架/总数，Z=参考外借；保存/阅览不单列，仅有保存/阅览册的馆兜底一行），无册级明细的旧数据按聚合值兜底「在架 X / 共 Y 册」
+- **目录 TOC**（浮动式，index.html `#toc`，`renderToc()` 生成）：一级为分组（无分组时「全部图书」）/ 书单助手 / 历史数据栏，默认折叠，点击一级展开二级（当前筛选下可见的书）；内容取自 `renderBooks` 写入的 `state.tocSections`，随筛选联动。PC（≥1024px）为右侧常显悬浮面板（`.toc-fold` 可收成竖排细条）；移动端收进右下角 `#toc-fab` 悬浮按钮，点开为底部抽屉（`#toc-mask` 遮罩 / `#toc-close` 关闭，逻辑在 `setupToc()`/`openToc()`/`closeToc()`）。分组节标题带 `group-N` id，书单助手 section id 为 `helper-section`
 - 借阅类型分桶（前端 `bucketOf()`）：含"参考外借"→橙（馆内借读）；含"保存"/"仅供阅览"→灰；含"普通外借"或 null→绿
 - index.json 中 `callNumber` 兼容两种形态：字符串（单索书号）或数组（多卷册），前端用 `callNumberText()` 统一处理
 - **book id 关联历史文件** `data/history/{id}.json`：采样前 `assignStableIds`（sampler/src/books.js）按索书号集合→书名沿用既有 index.json 的 id，新书分配未占用 id（不复用已删除书的 id）；勿让 id 随 books.txt 行号漂移，否则历史串书
 - 书单助手草稿存浏览器 localStorage（key `booklist-draft`），不写入仓库；生效必须提交 books.txt。编辑器为**数据模型驱动**（`rows` 数组渲染成分段表格）：分组段标题行可重命名/解散分组，行首 ⠿ 手柄拖拽调序/换组（HTML5 DnD，仅桌面端）；索书号**随改随校验**（无手动校验按钮）；产物只保留「下载 books.txt」（无生成预览/复制按钮）；草稿不再含 tags（读取旧草稿时忽略该字段）
 - 筛选条两段：在馆状态 pills（单选）＋分组 chips（有分组数据才出现，再点取消），可叠加过滤；书卡按 `group` 分节渲染，未分组节标题为「未分组」。**前端已不再展示/编辑标签**（books.txt 第 4 列标签 sampler 仍会解析写入 index.json，前端忽略）
-- **易借指数的计算说明在书卡星星的悬浮/点击气泡里**（`.stars-tip`，按该书实际生效维度逐项列出；桌面 :hover、触屏点击切换 .open，全站不再有独立说明条）；分享：书卡标题旁「分享」按钮（移动端 Web Share API / 桌面端复制 `#card-id` 锚点链接，渲染后补一次 hash 定位），分享卡片图 `docs/og-image.png`（1200×630，og:image 用相对路径，部署域名确定后改绝对 URL）
+- **书卡信息架构：左栏 = 评级（易借指数星级 + 在架率），右栏 = 行动（行动建议 → 分馆小表 → 趋势图表）**；借阅类型构成色带 / 徽章、「当前状态」行已删除（信息并入分馆小表与行动建议，勿再加回）。**易借指数的计算说明在书卡星星的悬浮/点击气泡里**（`.stars-tip`，按该书实际生效维度逐项列出；桌面 :hover、触屏点击切换 .open，全站不再有独立说明条）；在架率的口径说明（采样次数 / 普通外借册）复用同一气泡机制（`.rate` 块，`bindStarsTip` 同时绑定 `.stars` 与 `.rate`）；分享：书卡标题旁「分享」按钮（移动端 Web Share API / 桌面端复制 `#card-id` 锚点链接，渲染后补一次 hash 定位），分享卡片图 `docs/og-image.png`（1200×630，og:image 用相对路径，部署域名确定后改绝对 URL）
 - 采样器修改后同步更新 `sampler/test/run.js` 的 fixture 测试；前端改动需验证真实数据和 demo 两种模式
 - 代码注释、commit message 用中文，风格参照现有代码
 

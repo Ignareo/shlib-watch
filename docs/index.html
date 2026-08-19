@@ -44,6 +44,19 @@
       <div class="stat-cell"><div class="num" id="stat-days">—</div><div class="label">观测天数</div></div>
     </section>
 
+    <!-- 浮动目录（renderToc 生成，随筛选联动；一级默认折叠，点击展开二级书名）。
+         PC：右侧悬浮面板，可用 » 收成细条；移动端：收进右下角「目录」按钮，点开为底部抽屉 -->
+    <nav class="toc" id="toc" hidden aria-label="目录">
+      <div class="toc-head">
+        <span class="toc-title">目录</span>
+        <button class="toc-fold" id="toc-fold" aria-label="收起 / 展开目录">»</button>
+        <button class="toc-close" id="toc-close" aria-label="关闭目录">×</button>
+      </div>
+      <div id="toc-nav"></div>
+    </nav>
+    <button class="toc-fab" id="toc-fab" hidden>目录</button>
+    <div class="toc-mask" id="toc-mask" hidden></div>
+
     <!-- 当前可借情况 -->
     <section class="avail-board" id="avail-board" hidden>
       <div class="avail-group">

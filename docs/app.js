@@ -124,6 +124,10 @@ function showEmptyState() {
   $("#avail-board").hidden = true;
   $("#branch-bar").hidden = true;
   $("#history-section").hidden = true;
+  $("#toc").hidden = true;
+  $("#toc").classList.remove("open");
+  $("#toc-fab").hidden = true;
+  $("#toc-mask").hidden = true;
   $("#book-list").innerHTML = "";
   $("#updated-at").textContent = "尚无数据";
   $("#footer-schedule").textContent = "采样周期：见 config.json";
@@ -405,6 +409,58 @@ function render() {
   renderAvailability();
   renderBooks();
   renderHistoryPanel();
+  renderToc();
+}
+
+// 浮动目录：一级为分组（无分组时「全部图书」）/ 书单助手 / 历史数据栏，二级为当前筛选下可见的书。
+// 一级默认折叠，点击展开/收起二级（手风琴）；无二级的一级项（书单助手等）点击直接滚动定位。
+// 内容取自 renderBooks 写入的 state.tocSections，随在馆状态/分组筛选联动。
+// PC 为右侧常显面板（可用 » 收成细条）；移动端收进右下角「目录」按钮，点开为底部抽屉。
+function renderToc() {
+  const nav = $("#toc-nav");
+  nav.innerHTML =
+    (state.tocSections ?? [])
+      .map(
+        (s) => `
+      <div class="toc-group">
+        <button class="toc-l1" data-group>${escapeHtml(s.name)}<span class="toc-count">${s.books.length}</span></button>
+        <div class="toc-l2">${s.books.map((b) => `<button class="toc-book" data-target="card-${escapeHtml(b.id)}">${escapeHtml(b.title)}</button>`).join("")}</div>
+      </div>`
+      )
+      .join("") +
+    `<div class="toc-group toc-fixed">
+      <button class="toc-l1" data-target="helper-section">书单助手</button>
+      ${!$("#history-section").hidden ? `<button class="toc-l1" data-target="history-section">历史数据栏</button>` : ""}
+    </div>`;
+  // 一级分组：点击切换二级展开/收起
+  nav.querySelectorAll("[data-group]").forEach((btn) => {
+    btn.addEventListener("click", () => btn.closest(".toc-group").classList.toggle("open"));
+  });
+  // 叶子项：滚动定位（移动端抽屉随 closeToc 一并收起）
+  nav.querySelectorAll("[data-target]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      closeToc();
+      document.getElementById(btn.dataset.target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+  $("#toc").hidden = false;
+  $("#toc-fab").hidden = false;
+}
+
+// 移动端抽屉开关（PC 面板常显，仅 fold 细条化）；setupToc 只做一次性事件绑定
+function openToc() {
+  $("#toc").classList.add("open");
+  $("#toc-mask").hidden = false;
+}
+function closeToc() {
+  $("#toc").classList.remove("open");
+  $("#toc-mask").hidden = true;
+}
+function setupToc() {
+  $("#toc-fab").addEventListener("click", openToc);
+  $("#toc-mask").addEventListener("click", closeToc);
+  $("#toc-close").addEventListener("click", closeToc);
+  $("#toc-fold").addEventListener("click", () => $("#toc").classList.toggle("folded"));
 }
 
 // 观测口径选择：从 index.json 的 branches 全量列表生成 chips，勾选哪些馆计入统计
@@ -566,6 +622,7 @@ function renderBooks() {
 
   if (!visible.length) {
     list.innerHTML = `<div class="filter-empty">没有符合当前筛选条件的书</div>`;
+    state.tocSections = [];
     return;
   }
 
@@ -578,17 +635,26 @@ function renderBooks() {
     if (!sections.has(g)) sections.set(g, []);
     sections.get(g).push(x);
   }
+  // tocSections 供 renderToc 使用（目录跟随当前筛选，与此处分节结果一致）
+  const tocSections = [];
+  let groupSeq = 0;
   for (const [groupName, sectionItems] of sections) {
     if (hasGroups) {
       const h = document.createElement("h2");
       h.className = "group-title";
+      h.id = `group-${groupSeq++}`; // 节锚点
       h.textContent = groupName ?? "未分组";
       list.appendChild(h);
     }
+    tocSections.push({
+      name: hasGroups ? groupName ?? "未分组" : "全部图书",
+      books: sectionItems.map((x) => x.book),
+    });
     for (const { book, stats } of sectionItems) {
       list.appendChild(buildBookCard(book, stats));
     }
   }
+  state.tocSections = tocSections;
 
   // 初始化图表（需要 DOM 已挂载）
   for (const { book, stats } of visible) {
@@ -1801,6 +1867,7 @@ window.addEventListener("resize", () => state.charts.forEach((c) => c.resize()))
 setupHistoryPanel();
 setupBooksHelper();
 setupGhBox();
+setupToc();
 if (isNative) {
   // App 模式：采样在本机执行，无需本地服务器 / GitHub Actions
   state.nativeApp = true;
