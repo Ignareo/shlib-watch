@@ -121,7 +121,6 @@ async function refreshData() {
 function showEmptyState() {
   $("#empty-state").hidden = false;
   $("#stats-band").hidden = true;
-  $("#score-explainer").hidden = true;
   $("#avail-board").hidden = true;
   $("#branch-bar").hidden = true;
   $("#history-section").hidden = true;
@@ -264,6 +263,9 @@ function computeStats(bookId) {
 
   return {
     samples: n, rate, weekdayRate, weekendRate, score,
+    copyFactor,                                 // 册数折减系数（易借指数 tooltip 展示用）
+    gap,                                        // 周末落差（0 表示未启用或无落差）
+    streakBonus,                                // 连续借空加分
     avgCopies: Math.round(avgCopies * 10) / 10, // 平均普通外借册数（折减依据，展示/调试可用）
     streak,                                     // 最新连续无书天数（加分依据）
     latest: rows.at(-1),
@@ -271,13 +273,48 @@ function computeStats(bookId) {
   };
 }
 
-// 三档评级：新公式仍是 0–100 同一量纲（折减只影响低册数书、加分封顶不破 100），阈值 35/65 维持不变
-function ratingOf(score, samples) {
-  if (samples < 3) return { text: "数据积累中", cls: "na" };
-  if (score < 35) return { text: "随手可借", cls: "easy" };
-  if (score <= 65) return { text: "需要蹲点", cls: "mid" };
-  return { text: "极其抢手", cls: "hard" };
+// ---------------- 易借指数（UI 层）：难借分换算成 0–5 星，星越多越好借 ----------------
+function starsOf(stats) {
+  return Math.round((100 - stats.score) / 20);
 }
+
+// 星星悬浮/点击时的计算说明：按该书实际生效的维度逐项列出
+function starsTipHtml(stats) {
+  if (stats.samples < 3) return `已采样 ${stats.samples} 次，满 3 次后出易借指数`;
+  const pct = (r) => `${Math.round(r * 100)}%`;
+  const lines = [`<b>易借指数 ${starsOf(stats)}/5（星越多越好借）</b>`];
+  lines.push(`在架率 ${pct(stats.rate)} × ${stats.copyFactor}（平均 ${stats.avgCopies} 册折减）`);
+  if (stats.gap > 0) lines.push(`周末在架率比工作日低 ${pct(stats.gap)} → 难借分 +${Math.round(stats.gap * 20)}`);
+  if (stats.streakBonus > 0) lines.push(`最新连续 ${stats.streak} 天无书在架 → 难借分 +${stats.streakBonus}`);
+  lines.push(`难借分合计 ${stats.score}/100（越高越难借）`);
+  lines.push(`换算：(100 − ${stats.score}) ÷ 20 ≈ ${starsOf(stats)} 星`);
+  lines.push(`<i>口径：仅普通外借册，${stats.samples} 次采样</i>`);
+  return lines.join("<br>");
+}
+
+// 书卡左栏的星级块：5 颗星 + 小字标签 + 计算说明气泡（桌面悬浮 / 触屏点击展开）
+function starsBlockHtml(stats, label) {
+  const n = stats.samples >= 3 ? starsOf(stats) : 0;
+  const stars = Array.from({ length: 5 }, (_, i) => `<span class="${i < n ? "on" : "off"}">★</span>`).join("");
+  return (
+    `<div class="stars" role="button" tabindex="0" aria-label="易借指数计算说明">` +
+    `<div class="stars-row">${stars}</div>` +
+    `<div class="stars-label">${label}</div>` +
+    `<div class="stars-tip">${starsTipHtml(stats)}</div>` +
+    `</div>`
+  );
+}
+
+// 触屏点击星星展开/收起计算说明；点页面其他位置关闭所有已展开的气泡
+function bindStarsTip(card) {
+  card.querySelector(".stars")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    card.querySelector(".stars-tip")?.classList.toggle("open");
+  });
+}
+document.addEventListener("click", () => {
+  document.querySelectorAll(".stars-tip.open").forEach((tip) => tip.classList.remove("open"));
+});
 
 // 口径下最近一次有数据的采样汇总（构成色带/徽章/可借状态用）
 function latestCounts(bookId) {
@@ -384,7 +421,7 @@ function renderBranchPrefs() {
   box.hidden = false;
   const effective = new Set(mainBranches() ?? all); // 当前生效口径；null（=全部分馆）时全部点亮
   box.innerHTML =
-    `<span class="branch-prefs-label" title="勾选哪些分馆计入在架率 / 难借分 / 可借分组统计">观测口径：</span>` +
+    `<span class="branch-prefs-label" title="勾选哪些分馆计入在架率 / 易借指数 / 可借分组统计">观测口径：</span>` +
     all
       .map(
         (name) =>
@@ -499,16 +536,10 @@ function renderOverview() {
   const withStats = books.map((b) => ({ book: b, stats: computeStats(b.id), group: availabilityGroup(b.id) }));
   const measurable = withStats.filter((x) => x.group !== "nodata");
   const availableNow = withStats.filter((x) => x.group === "available").length;
-  const scored = withStats.filter((x) => x.stats && x.stats.samples >= 3);
-  const avgScore = scored.length
-    ? Math.round(scored.reduce((a, x) => a + x.stats.score, 0) / scored.length)
-    : null;
 
   $("#stats-band").hidden = false;
-  $("#score-explainer").hidden = false; // 难借分口径说明全站只此一处（书卡不再重复）
   $("#stat-books").innerHTML = `${books.length} <small>本</small>`;
   $("#stat-available").innerHTML = `${availableNow} <small>/ ${measurable.length} 本</small>`;
-  $("#stat-score").innerHTML = avgScore !== null ? String(avgScore) : `<small>数据积累中</small>`;
   $("#stat-days").innerHTML = `${dates.length} <small>天</small>`;
 }
 
@@ -579,14 +610,12 @@ function buildBookCard(book, stats) {
   card.id = `card-${book.id}`;
 
   const noOrdinary = Boolean(stats?.noOrdinary);
-  const rating = noOrdinary
-    ? { text: "仅馆内阅览", cls: "na" }
+  // 左栏星级块：正常出分给 0–5 星；特殊状态只给小字不出星
+  const starsHtml = noOrdinary
+    ? `<div class="stars-na">仅馆内阅览</div>`
     : stats
-      ? ratingOf(stats.score, stats.samples)
-      : { text: "未匹配", cls: "na" };
-  const scoreHtml = stats && !noOrdinary
-    ? `<div class="score-num">${stats.samples >= 3 ? stats.score : "—"}<span class="of"> /100</span></div>`
-    : `<div class="score-num">—<span class="of"> /100</span></div>`;
+      ? starsBlockHtml(stats, stats.samples >= 3 ? "易借指数" : "数据积累中")
+      : `<div class="stars-na">—</div>`;
 
   const metaBits = [
     `<span class="callnumber">${escapeHtml(callNumberText(book))}</span>`,
@@ -645,11 +674,7 @@ function buildBookCard(book, stats) {
 
   card.innerHTML = `
     <div class="score-col">
-      <div>
-        ${scoreHtml}
-        <span class="score-badge ${rating.cls}">${rating.text}</span>
-        <div class="score-meter"><i style="width:${stats && !noOrdinary && stats.samples >= 3 ? stats.score : 0}%"></i></div>
-      </div>
+      <div>${starsHtml}</div>
     </div>
     <div>
       <h3 class="book-title">${titleHtml}${newlyAvailable.has(book.id) ? `<span class="new-badge">新可借</span>` : ""}</h3>
@@ -657,6 +682,7 @@ function buildBookCard(book, stats) {
       ${bodyHtml}
     </div>`;
   bindShareBtn(card, book);
+  bindStarsTip(card);
   return card;
 }
 
@@ -746,9 +772,9 @@ function actionLineHtml(book) {
   return "";
 }
 
-// 冷启动期兜底：采样未满 3 次不出难借分，但展示已有信息（采样天数 / 较上次的在架册数变化）
+// 冷启动期兜底：采样未满 3 次不出易借指数，但展示已有信息（采样天数 / 较上次的在架册数变化）
 function warmupRowHtml(stats) {
-  const parts = [`已采样 ${stats.samples} 天，满 3 次后出难借分`];
+  const parts = [`已采样 ${stats.samples} 天，满 3 次后出易借指数`];
   if (stats.rows.length >= 2) {
     const delta = stats.rows.at(-1).available - stats.rows.at(-2).available;
     parts.push(delta === 0 ? "在架册数与上次持平" : `较上次 ${delta > 0 ? "+" : ""}${delta} 册在架`);

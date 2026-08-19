@@ -21,7 +21,7 @@ books.txt（书单）→ sampler 抓取馆藏 → docs/data/*.json（git 提交�
   - `test/run.js` 手写的 node:assert 单测（fixture HTML 驱动，无测试框架；含内存 platform 的 runSampling 端到端用例）
 - `mobile/` — 安卓 App（Capacitor 7）：`sampler-entry.js` App 端 platform 实现（CapacitorHttp 绕 CORS / Filesystem 存储 / WebView 内过码，暴露 `window.BbtApp`）；`build.mjs` 构建（拷 docs/ → www/ + esbuild 打 sampler 核心 + cap sync）；`android/` 原生工程；`www/` 为构建产物（已 gitignore）
 - `docs/` — GitHub Pages 站点（原生 HTML/CSS/JS + vendored ECharts，**无框架无构建**）
-  - `app.js` 全部前端逻辑（看板渲染、难借分计算、书单助手、历史清理）
+  - `app.js` 全部前端逻辑（看板渲染、难借分计算与易借指数换算、书单助手、历史清理）
   - `data/index.json` 书目索引 + 分馆列表；`data/history/{bookId}.json` 每书采样历史
 - `.github/workflows/sample.yml` — 每天 10:05（北京时间）定时采样，支持 workflow_dispatch 手动触发
 - `.cache/` — record_id 缓存（records.json）、验证码会话（session.json），已 gitignore
@@ -38,7 +38,7 @@ cd mobile && npm install && npm run build  # 构建安卓工程（APK 需 Androi
 
 ## 关键约定
 
-- **难借分**只在前端（docs/app.js `computeStats`）即时计算，不持久化：在架率按册数折减（约 1 册 ×0.6 / 2 册 ×0.8 / 3–4 册 ×0.9 / ≥5 册 ×1.0）；周末样本 ≥5 次时启用「在架率 80 + 周末落差 20」，不足则在架率独占 100 分；最新连续 0 册在架 ≥3/≥7/≥14 天加 5/10/20 分，封顶 100。采样 <3 次不出分，三档阈值 35/65。口径为**普通外借册**：circulationType 含"保存"/"仅供阅览"/"参考外借"的册不计入分母；无普通外借册的书显示「仅馆内阅览」
+- **易借指数**（UI 层，0–5 星，星越多越好借）由内部「难借分」换算：难借分只在前端（docs/app.js `computeStats`）即时计算，不持久化：在架率按册数折减（约 1 册 ×0.6 / 2 册 ×0.8 / 3–4 册 ×0.9 / ≥5 册 ×1.0）；周末样本 ≥5 次时启用「在架率 80 + 周末落差 20」，不足则在架率独占 100 分；最新连续 0 册在架 ≥3/≥7/≥14 天加 5/10/20 分，封顶 100。UI 换算 `starsOf`：(100 − 难借分) ÷ 20 四舍五入取整星。采样 <3 次不出星（显示「数据积累中」）。口径为**普通外借册**：circulationType 含"保存"/"仅供阅览"/"参考外借"的册不计入分母；无普通外借册的书显示「仅馆内阅览」
 - **App 模式**（`docs/app.js` 顶部 `isNative` 检测 `window.Capacitor` + `window.BbtApp`）：`fetchJson("data/*")` 分流到本机 Filesystem（读不到时回退 APK 内置种子）；「刷新数据」变为本机「重新采样」；「下载 books.txt」变为「保存到本机」；隐藏 GitHub Actions 区；App 打开时今天无样本则自动补采（周期判断在 sampler 核心，非采样日自动跳过；手动点为强制）。**网页端 `vendor/sampler-bundle.js` 恒 404，属预期**
 - **观测口径默认淮海路馆＋东馆**（前端 `mainBranches()`），用户可在「观测口径」chips 勾选分馆（偏好存 localStorage 键 `branch-prefs`，分馆名数组；无偏好/空偏好/偏好全部失效时回落默认，默认无匹配返回 null = 全部分馆），采样时抓取全部分馆
 - 借阅类型分桶（前端 `bucketOf()`）：含"参考外借"→橙（馆内借读）；含"保存"/"仅供阅览"→灰；含"普通外借"或 null→绿
@@ -46,7 +46,7 @@ cd mobile && npm install && npm run build  # 构建安卓工程（APK 需 Androi
 - **book id 关联历史文件** `data/history/{id}.json`：采样前 `assignStableIds`（sampler/src/books.js）按索书号集合→书名沿用既有 index.json 的 id，新书分配未占用 id（不复用已删除书的 id）；勿让 id 随 books.txt 行号漂移，否则历史串书
 - 书单助手草稿存浏览器 localStorage（key `booklist-draft`），不写入仓库；生效必须提交 books.txt。编辑器为**数据模型驱动**（`rows` 数组渲染成分段表格）：分组段标题行可重命名/解散分组，行首 ⠿ 手柄拖拽调序/换组（HTML5 DnD，仅桌面端）；索书号**随改随校验**（无手动校验按钮）；产物只保留「下载 books.txt」（无生成预览/复制按钮）；草稿不再含 tags（读取旧草稿时忽略该字段）
 - 筛选条两段：在馆状态 pills（单选）＋分组 chips（有分组数据才出现，再点取消），可叠加过滤；书卡按 `group` 分节渲染，未分组节标题为「未分组」。**前端已不再展示/编辑标签**（books.txt 第 4 列标签 sampler 仍会解析写入 index.json，前端忽略）
-- **难借分口径说明全站只有一处**（概览栏下方 `#score-explainer`，书卡不再重复）；分享：书卡标题旁「分享」按钮（移动端 Web Share API / 桌面端复制 `#card-id` 锚点链接，渲染后补一次 hash 定位），分享卡片图 `docs/og-image.png`（1200×630，og:image 用相对路径，部署域名确定后改绝对 URL）
+- **易借指数的计算说明在书卡星星的悬浮/点击气泡里**（`.stars-tip`，按该书实际生效维度逐项列出；桌面 :hover、触屏点击切换 .open，全站不再有独立说明条）；分享：书卡标题旁「分享」按钮（移动端 Web Share API / 桌面端复制 `#card-id` 锚点链接，渲染后补一次 hash 定位），分享卡片图 `docs/og-image.png`（1200×630，og:image 用相对路径，部署域名确定后改绝对 URL）
 - 采样器修改后同步更新 `sampler/test/run.js` 的 fixture 测试；前端改动需验证真实数据和 demo 两种模式
 - 代码注释、commit message 用中文，风格参照现有代码
 
