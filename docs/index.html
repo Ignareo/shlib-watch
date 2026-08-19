@@ -169,6 +169,9 @@
 
   <div class="toast" id="toast"></div>
   <script src="vendor/echarts.min.js"></script>
+  <!-- sampler-bundle.js 只存在于安卓 APK 包内（mobile/ 构建产物），提供 window.BbtApp；
+       网页端 404 静默失败，app.js 的 isNative 检测会回落到网页模式 -->
+  <script src="vendor/sampler-bundle.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

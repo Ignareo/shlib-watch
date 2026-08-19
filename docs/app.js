@@ -16,6 +16,10 @@ const WEEK_NAMES = ["", "周一", "周二", "周三", "周四", "周五", "周�
 const $ = (sel) => document.querySelector(sel);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// 是否运行在安卓 App（Capacitor）内：true 时数据读写与采样都走本机（window.BbtApp，
+// 由打包进 APK 的 vendor/sampler-bundle.js 提供；网页端该文件不存在，恒为 false）
+const isNative = !!window.Capacitor?.isNativePlatform?.() && !!window.BbtApp;
+
 function toast(message) {
   const el = $("#toast");
   el.textContent = message;
@@ -25,6 +29,8 @@ function toast(message) {
 
 // ---------------- 数据加载 ----------------
 async function fetchJson(url) {
+  // App 模式：data/* 走本机文件（首次启动自动回退到 APK 内置种子数据）
+  if (isNative && url.startsWith("data/")) return window.BbtApp.fetchJson(url);
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`${url} ${res.status}`);
   return res.json();
@@ -1425,15 +1431,26 @@ function setupBooksHelper() {
   });
 
   // 「下载 books.txt」：先校验（有标红则中止），通过则直接生成并下载
-  $("#btn-download-books").addEventListener("click", () => {
+  // App 模式改为「保存到本机」：写入应用私有目录，下次采样直接生效
+  $("#btn-download-books").addEventListener("click", async () => {
     const text = generateText();
     if (text === null) return;
+    if (state.nativeApp) {
+      try {
+        await window.BbtApp.saveBooksText(text);
+        toast(`已保存到本机（${rows.length} 条书目），下次采样生效`);
+      } catch (err) {
+        toast(`保存失败：${err.message}`);
+      }
+      return;
+    }
     downloadText("books.txt", text, "text/plain");
     toast(`已下载 ${rows.length} 条书目 —— 替换仓库根目录 books.txt 并提交`);
   });
 
   $("#btn-refresh").addEventListener("click", () => {
-    if (state.localServer) startLocalSampling();
+    if (state.nativeApp) startAppSampling();
+    else if (state.localServer) startLocalSampling();
     else refreshData();
   });
 }
@@ -1482,6 +1499,36 @@ async function startLocalSampling() {
   } catch (err) {
     status.textContent = "采样触发失败";
     toast(`采样触发失败：${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// App 模式：在本机执行真实采样（sampler 核心打包在 vendor/sampler-bundle.js 内），
+// 日志经 onLog 回调透传到 #sample-log；完成后复用现有重新拉取逻辑
+async function startAppSampling(force = true) {
+  const btn = $("#btn-refresh");
+  const status = $("#refresh-status");
+  const logEl = $("#sample-log");
+  btn.disabled = true;
+  logEl.hidden = false;
+  const lines = [];
+  try {
+    const result = await window.BbtApp.runSampling({
+      force,
+      onLog: (line) => {
+        lines.push(line);
+        logEl.textContent = lines.filter((l) => l.trim()).slice(-6).join("\n");
+        status.textContent = "正在采样…";
+      },
+    });
+    logEl.hidden = true;
+    if (result) toast(`采样完成（${result.sampled}/${result.total} 本），正在重新加载数据…`);
+    else status.textContent = "今天不是采样日，未执行采样";
+    await refreshData();
+  } catch (err) {
+    status.textContent = "采样失败，日志见上方";
+    toast(`采样失败：${err.message}`);
   } finally {
     btn.disabled = false;
   }
@@ -1722,11 +1769,34 @@ window.addEventListener("resize", () => state.charts.forEach((c) => c.resize()))
 setupHistoryPanel();
 setupBooksHelper();
 setupGhBox();
-detectLocalServer().then((ok) => {
-  state.localServer = ok;
-  $("#btn-refresh").textContent = ok ? "重新采样" : "刷新数据";
-  $("#btn-refresh").title = ok
-    ? "本地服务器模式：真实执行一次采样（npm run sample:force）"
-    : "静态托管模式：重新拉取仓库里已有的数据";
+if (isNative) {
+  // App 模式：采样在本机执行，无需本地服务器 / GitHub Actions
+  state.nativeApp = true;
+  $("#btn-refresh").textContent = "重新采样";
+  $("#btn-refresh").title = "App 模式：在本机真实执行一次采样";
+  $("#btn-download-books").textContent = "保存到本机";
+  $("#gh-box").hidden = true;
+} else {
+  detectLocalServer().then((ok) => {
+    state.localServer = ok;
+    $("#btn-refresh").textContent = ok ? "重新采样" : "刷新数据";
+    $("#btn-refresh").title = ok
+      ? "本地服务器模式：真实执行一次采样（npm run sample:force）"
+      : "静态托管模式：重新拉取仓库里已有的数据";
+  });
+}
+loadAll().then(() => {
+  // App 打开时自动补采：今天还没有任何样本就跑一次（采样周期判断由 sampler 核心负责，
+  // 非采样日会自动跳过；手动点「重新采样」则为强制执行）
+  if (!state.nativeApp || state.demo || !state.index) return;
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const today = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const sampledToday = Object.values(state.histories).some(
+    (h) => h.samples.at(-1)?.date === today
+  );
+  if (!sampledToday) {
+    toast("今天尚未采样，自动开始…");
+    startAppSampling(false);
+  }
 });
-loadAll();
