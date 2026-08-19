@@ -717,7 +717,7 @@ function bindShareBtn(card, book) {
 }
 
 // 书卡顶部一行行动建议：按优先级取第一条命中
-// 1. 主馆有可借（精确到馆藏位置）→ 2. 网借中心可约 → 3. 全部借出（有 dueDate 给最早归还日）→ 4. 仅馆内阅览
+// 1. 主馆有可借（精确到馆藏位置）→ 2. 网借中心可约（需在观测口径内，未勾选不提示）→ 3. 全部借出（有 dueDate 给最早归还日）→ 4. 仅馆内阅览
 function actionLineHtml(book) {
   const sample = bookSamples(book.id).at(-1);
   if (!sample) return "";
@@ -746,8 +746,8 @@ function actionLineHtml(book) {
   if (spots.length)
     return spots.map((s) => `<div class="action-line ok">${s}</div>`).join("");
 
-  // 2. 网借中心有可借：线上下单送书，对读者最友好的渠道
-  if (names.some((n) => n.includes("网借中心") && availableCopiesAt(n).length)) {
+  // 2. 网借中心有可借：线上下单送书，对读者最友好的渠道；只在观测口径内勾选时才提示
+  if (main.some((n) => n.includes("网借中心") && availableCopiesAt(n).length)) {
     return `<div class="action-line">📦 网借中心可约，支持线上下单送书</div>`;
   }
 
@@ -782,7 +782,9 @@ function warmupRowHtml(stats) {
   return `<div class="kv-row"><span class="k">积累中</span><span class="v">${parts.join("；")}</span></div>`;
 }
 
-// 分馆小表：口径内分馆（mainBranches，默认淮海路/东馆）与网借中心平铺（网借支持线上下单，单独提级），其余分馆折叠；无数据显示「无数据」
+// 分馆小表：只列口径内分馆（mainBranches，默认淮海路/东馆），未勾选的分馆（含网借中心）一律不显示。
+// 每馆明示构成：普通外借「可外借 X/Y 册」；参考外借并入「馆内借读 Z 册」（保存/仅供阅览不单列，
+// 只有保存/阅览册的馆兜底一行说明）；无册级明细的旧数据无法拆分借阅类型，按聚合值兜底。
 function branchRowsHtml(book) {
   const samples = bookSamples(book.id);
   const latestSample = samples.at(-1) ?? null;
@@ -793,26 +795,30 @@ function branchRowsHtml(book) {
     if (!counts) {
       dotCls = "none";
       text = "无数据";
-    } else if (counts.hasCopies && counts.total === 0) {
-      dotCls = "none";
-      text = `无普通外借册（共 ${counts.allTotal} 册馆内资料）`;
-    } else {
+    } else if (!counts.hasCopies) {
+      // 旧数据无册级明细：聚合值未拆分借阅类型，全部按普通外借展示
       dotCls = counts.available >= 1 ? "ok" : "bad";
-      text = `在架 ${counts.available} / 共 ${counts.total}`;
+      text = `在架 ${counts.available} / 共 ${counts.total} 册`;
+    } else if (counts.total > 0) {
+      dotCls = counts.available >= 1 ? "ok" : "bad";
+      text = `可外借 ${counts.available}/${counts.total} 册`;
+      if (counts.ref > 0) text += ` · 馆内借读 ${counts.ref} 册`;
+    } else if (counts.ref > 0) {
+      dotCls = "none";
+      text = `仅馆内借读 ${counts.ref} 册，不可外借`;
+    } else {
+      dotCls = "none";
+      text = `仅保存/阅览 ${counts.keep} 册，不可外借`;
     }
     return `<div class="branch-row"><span class="dot ${dotCls}"></span><span class="bname">${escapeHtml(shortBranchName(name))}</span><span class="bstat">${text}</span></div>`;
   };
 
   const all = state.index.branches ?? [];
   const main = mainBranches() ?? all;
-  const online = all.filter((n) => !main.includes(n) && n.includes("网借中心"));
-  const others = all.filter((n) => !main.includes(n) && !n.includes("网借中心"));
 
   return `
     <div class="branch-rows">
       ${main.map(rowHtml).join("")}
-      ${online.map(rowHtml).join("")}
-      ${others.length ? `<details class="branch-more"><summary>展开其他分馆（${others.length}）</summary>${others.map(rowHtml).join("")}</details>` : ""}
     </div>`;
 }
 

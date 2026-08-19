@@ -40,7 +40,7 @@ cd mobile && npm install && npm run build  # 构建安卓工程（APK 需 Androi
 
 - **易借指数**（UI 层，0–5 星，星越多越好借）由内部「难借分」换算：难借分只在前端（docs/app.js `computeStats`）即时计算，不持久化：在架率按册数折减（约 1 册 ×0.6 / 2 册 ×0.8 / 3–4 册 ×0.9 / ≥5 册 ×1.0）；周末样本 ≥5 次时启用「在架率 80 + 周末落差 20」，不足则在架率独占 100 分；最新连续 0 册在架 ≥3/≥7/≥14 天加 5/10/20 分，封顶 100。UI 换算 `starsOf`：(100 − 难借分) ÷ 20 四舍五入取整星。采样 <3 次不出星（显示「数据积累中」）。口径为**普通外借册**：circulationType 含"保存"/"仅供阅览"/"参考外借"的册不计入分母；无普通外借册的书显示「仅馆内阅览」
 - **App 模式**（`docs/app.js` 顶部 `isNative` 检测 `window.Capacitor` + `window.BbtApp`）：`fetchJson("data/*")` 分流到本机 Filesystem（读不到时回退 APK 内置种子）；「刷新数据」变为本机「重新采样」；「下载 books.txt」变为「保存到本机」；隐藏 GitHub Actions 区；App 打开时今天无样本则自动补采（周期判断在 sampler 核心，非采样日自动跳过；手动点为强制）。**网页端 `vendor/sampler-bundle.js` 恒 404，属预期**
-- **观测口径默认淮海路馆＋东馆**（前端 `mainBranches()`），用户可在「观测口径」chips 勾选分馆（偏好存 localStorage 键 `branch-prefs`，分馆名数组；无偏好/空偏好/偏好全部失效时回落默认，默认无匹配返回 null = 全部分馆），采样时抓取全部分馆
+- **观测口径默认淮海路馆＋东馆**（前端 `mainBranches()`），用户可在「观测口径」chips 勾选分馆（偏好存 localStorage 键 `branch-prefs`，分馆名数组；无偏好/空偏好/偏好全部失效时回落默认，默认无匹配返回 null = 全部分馆），采样时抓取全部分馆。**书卡分馆小表（`branchRowsHtml`）与行动建议的网借提示只显示口径内分馆**（未勾选的一律不出现）；分馆行文案为「可外借 X/Y 册 · 馆内借读 Z 册」（X/Y=普通外借在架/总数，Z=参考外借；保存/阅览不单列，仅有保存/阅览册的馆兜底一行），无册级明细的旧数据按聚合值兜底「在架 X / 共 Y 册」
 - 借阅类型分桶（前端 `bucketOf()`）：含"参考外借"→橙（馆内借读）；含"保存"/"仅供阅览"→灰；含"普通外借"或 null→绿
 - index.json 中 `callNumber` 兼容两种形态：字符串（单索书号）或数组（多卷册），前端用 `callNumberText()` 统一处理
 - **book id 关联历史文件** `data/history/{id}.json`：采样前 `assignStableIds`（sampler/src/books.js）按索书号集合→书名沿用既有 index.json 的 id，新书分配未占用 id（不复用已删除书的 id）；勿让 id 随 books.txt 行号漂移，否则历史串书
