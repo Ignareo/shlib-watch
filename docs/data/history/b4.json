@@ -364,6 +364,13 @@
       "weekday": 1,
       "error": "unresolved",
       "branches": {}
+    },
+    {
+      "ts": "2026-08-25T03:02:52.912Z",
+      "date": "2026-08-25",
+      "weekday": 2,
+      "error": "unresolved",
+      "branches": {}
     }
   ]
 }
