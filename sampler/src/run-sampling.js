@@ -115,7 +115,7 @@ export async function runSampling({
       recordUrl: primary?.recordId
         ? `https://vufind.library.sh.cn/Record/${primary.recordId}`
         : null,
-      resolveStatus: resolved.length ? "resolved" : "unresolved",
+      resolveStatus: resolved.length ? "resolved" : (resolutions.some((r) => r.status === "captcha") ? "captcha" : "unresolved"),
       needsReview: resolutions.some((r) => r.needsReview) || failed.length > 0,
       authors: primary?.meta?.authors ?? [],
       publisher: primary?.meta?.publisher ?? null,
@@ -197,11 +197,14 @@ export async function runSampling({
       await store.saveHistory(history);
       sampled += 1;
     } else {
-      warn(`[采样]   未能匹配到书目记录，已记录候选，请在网页端核对`);
+      const isCaptcha = resolutions.some((r) => r.status === "captcha");
+      warn(isCaptcha
+        ? `[采样]   触发上海图书馆人机验证，未能获取书目记录`
+        : `[采样]   未能匹配到书目记录，已记录候选，请在网页端核对`);
       const history = await store.loadHistory(book.id);
       upsertSample(history, {
         ts: nowIso, date: dateStr, weekday,
-        error: "unresolved",
+        error: isCaptcha ? "captcha" : "unresolved",
         branches: {},
       });
       await store.saveHistory(history);

@@ -1,6 +1,7 @@
 // books.txt 解析与 record_id 自动匹配
 // 本模块为纯逻辑（无 Node API），两端（Node / App）共用；读文件由调用方负责
 import { cacheKey, readCacheEntry } from "./record-cache.js";
+import { CaptchaRequiredError } from "./client.js";
 
 // 每行：书名 | 索书号 | record_id（可选）| 标签（可选，逗号分隔）
 // 也支持只填索书号：| 索书号
@@ -152,11 +153,15 @@ export async function resolveBook(client, book, { parseSearchResults, fetchHoldi
     : [{ query: book.callNumber, type: "CallNumber" }];
 
   let candidates = [];
+  let captchaHit = false;
   for (const s of searches) {
     try {
       const html = await client.fetchSearch(s.query, s.type);
       candidates = parseSearchResults(html);
     } catch (error) {
+      if (error instanceof CaptchaRequiredError) {
+        captchaHit = true;
+      }
       console.warn(`[resolve] 检索失败（${s.type}: ${s.query}）：${error.message}`);
       continue;
     }
@@ -170,7 +175,7 @@ export async function resolveBook(client, book, { parseSearchResults, fetchHoldi
   const exactMatches = candidates.filter((c) => sameCallNumber(c.callNumber, book.callNumber));
   if (!exactMatches.length) {
     return {
-      status: "unresolved",
+      status: captchaHit ? "captcha" : "unresolved",
       recordId: null,
       needsReview: true,
       candidates: candidates.slice(0, 5),

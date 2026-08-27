@@ -385,11 +385,16 @@ function trackAvailability() {
 }
 
 function allDates() {
-  const map = new Map(); // date -> {weekday, books}
+  const map = new Map(); // date -> {weekday, books, errors}
   for (const [bookId, history] of Object.entries(state.histories)) {
     for (const s of history.samples ?? []) {
-      if (!map.has(s.date)) map.set(s.date, { weekday: s.weekday, books: 0 });
-      map.get(s.date).books += 1;
+      if (!map.has(s.date)) map.set(s.date, { weekday: s.weekday, books: 0, errors: { captcha: 0, unresolved: 0 } });
+      const info = map.get(s.date);
+      if (s.error) {
+        info.errors[s.error] = (info.errors[s.error] ?? 0) + 1;
+      } else {
+        info.books += 1;
+      }
     }
   }
   return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]));
@@ -995,15 +1000,24 @@ function renderHistoryPanel() {
   section.hidden = false;
   const tbody = $("#history-tbody");
   tbody.innerHTML = dates
-    .map(
-      ([date, info]) => `
+    .map(([date, info]) => {
+      const errs = [];
+      if (info.errors.captcha) {
+        errs.push(`<span class="resolve-tag bad" title="当天因触发上海图书馆人机验证而未获取到数据">${info.errors.captcha} 本验证失败</span>`);
+      }
+      if (info.errors.unresolved) {
+        errs.push(`<span class="resolve-tag warn" title="当天未能匹配到书目记录">${info.errors.unresolved} 本未匹配</span>`);
+      }
+      const booksHtml = info.books ? `${info.books} 本` : "";
+      const statusHtml = [booksHtml, ...errs].filter(Boolean).join(" ") || "—";
+      return `
       <tr data-date="${date}">
         <td><input type="checkbox" class="prune-check" value="${date}"></td>
         <td>${date}</td>
         <td>${WEEK_NAMES[info.weekday] ?? ""}</td>
-        <td>${info.books} 本</td>
-      </tr>`
-    )
+        <td>${statusHtml}</td>
+      </tr>`;
+    })
     .join("");
   tbody.querySelectorAll(".prune-check").forEach((cb) => {
     cb.addEventListener("change", () => {
