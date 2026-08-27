@@ -24,7 +24,7 @@ books.txt（书单）→ sampler 抓取馆藏 → docs/data/*.json（git 提交�
   - `app.js` 全部前端逻辑（看板渲染、难借分计算与易借指数换算、书单助手、历史清理）
   - `data/index.json` 书目索引 + 分馆列表；`data/history/{bookId}.json` 每书采样历史
 - `.github/workflows/sample.yml` — 每天 10:05（北京时间）定时采样，支持 workflow_dispatch 手动触发
-- `.cache/` — record_id 缓存（records.json）、验证码会话（session.json），已 gitignore
+- `.cache/` — record_id 缓存（records.json，已提交仓库以避检索风控）、验证码会话（session.json，仍 gitignore）
 
 ## 常用命令
 

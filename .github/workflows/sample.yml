@@ -26,6 +26,14 @@ jobs:
       - name: 安装依赖
         run: cd sampler && npm install
 
+      - name: 恢复 record_id 缓存
+        uses: actions/cache@v4
+        with:
+          path: .cache/records.json
+          key: shlib-records-${{ hashFiles('books.txt') }}
+          restore-keys: |
+            shlib-records-
+
       - name: 执行采样
         run: cd sampler && node src/index.js sample
 
@@ -34,6 +42,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/data
+          git add docs/data .cache/records.json
           git diff --cached --quiet || git commit -m "sample: $(date +%F)"
           git push
