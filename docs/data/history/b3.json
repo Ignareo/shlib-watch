@@ -316,7 +316,7 @@
       }
     },
     {
-      "ts": "2026-08-27T01:10:40.524Z",
+      "ts": "2026-08-27T12:38:13.473Z",
       "date": "2026-08-27",
       "weekday": 4,
       "error": null,
@@ -367,7 +367,7 @@
               "circulationType": "普通外借资料",
               "rawStatus": "已借出",
               "itemId": "bd318c28-deda-474d-ad09-f6228c34f6e1",
-              "dueDate": "2026-08-26",
+              "dueDate": "2026-10-22",
               "availability": "unavailable"
             },
             {
