@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-20T07:02:14.191Z",
+  "updatedAt": "2026-08-27T01:10:40.524Z",
   "schedule": "每天",
   "books": [
     {
@@ -316,44 +316,7 @@
       "publisher": "人民邮电出版社",
       "publishedYear": "2016",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "154f69d3-cb8e-41f4-a495-ce0cb947c782",
-          "title": "浪潮之巅 = On top of tides",
-          "callNumber": "F497.12/6835-2",
-          "authors": [
-            "吴军"
-          ],
-          "publishedYear": "2016"
-        },
-        {
-          "recordId": "f6c4d83e-65d3-4aca-a015-e7060631c3d0",
-          "title": "浪潮之巅 = On top of tides",
-          "callNumber": "F497.12/6835-1",
-          "authors": [
-            "吴军"
-          ],
-          "publishedYear": "2013"
-        },
-        {
-          "recordId": "e6b05312-fd69-4da6-9946-a1a68f90cd80",
-          "title": "浪潮之巅 = On top of tides",
-          "callNumber": "F49/6835",
-          "authors": [
-            "吴军"
-          ],
-          "publishedYear": "2011"
-        },
-        {
-          "recordId": "5b3676aa-556e-44dd-8948-ec71a4a511f9",
-          "title": "浪潮之巅 = On top of tides",
-          "callNumber": "F497.12/6835-3",
-          "authors": [
-            "吴军"
-          ],
-          "publishedYear": "2019"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b17.json",
       "group": "计算机"
     }
