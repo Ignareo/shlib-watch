@@ -196,6 +196,34 @@
           ]
         }
       }
+    },
+    {
+      "ts": "2026-08-31T08:25:40.961Z",
+      "date": "2026-08-31",
+      "weekday": 1,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 1,
+          "available": 0,
+          "inLibrary": 1,
+          "unavailable": 0,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "K928.716.58/4844",
+              "barcode": "54121108355068",
+              "circulationType": "仅供阅览资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "in_library"
+            }
+          ]
+        }
+      }
     }
   ]
 }
