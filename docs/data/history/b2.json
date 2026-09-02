@@ -710,6 +710,78 @@
           ]
         }
       }
+    },
+    {
+      "ts": "2026-09-02T06:58:22.451Z",
+      "date": "2026-09-02",
+      "weekday": 3,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 5,
+          "available": 5,
+          "inLibrary": 0,
+          "unavailable": 0,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "TU-092.2/4952-9",
+              "barcode": "54121110594890",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "TU-092.2/4952-9",
+              "barcode": "54121110594891",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "TU-092.2/4952-1",
+              "barcode": "54121107167138",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆航头书库",
+              "callNumber": "TU-092.2/4952-1",
+              "barcode": "54121107167139",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "TU-092.2/4952-1",
+              "barcode": "54121107167140",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            }
+          ]
+        }
+      }
     }
   ]
 }
