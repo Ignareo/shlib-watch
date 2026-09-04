@@ -1482,6 +1482,131 @@
           ]
         }
       }
+    },
+    {
+      "ts": "2026-09-04T07:06:36.826Z",
+      "date": "2026-09-04",
+      "weekday": 5,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 5,
+          "available": 3,
+          "inLibrary": 0,
+          "unavailable": 2,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111461156",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111843796",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出",
+              "itemId": "a3912a46-d400-4f43-a952-5469ccd19823",
+              "dueDate": "2026-09-10",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111924025",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111617231",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111617232",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已借出",
+              "itemId": "eb925c7e-b365-4b3d-a1a0-a503e92a12fb",
+              "dueDate": "2026-10-03",
+              "availability": "unavailable"
+            }
+          ]
+        },
+        "上海图书馆（东馆）": {
+          "total": 4,
+          "available": 0,
+          "inLibrary": 0,
+          "unavailable": 4,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111617233",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出",
+              "itemId": "11127ed6-292e-4f8b-943b-728850a029e8",
+              "dueDate": "2026-10-03",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121111797707",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出",
+              "itemId": "3b3043e4-4536-4fb1-b17c-74a4b7bbc7fc",
+              "dueDate": "2026-09-20",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆少儿借阅区 - 1楼",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121180565534",
+              "circulationType": "少儿外借资料",
+              "rawStatus": "已借出",
+              "itemId": "65d7c486-a05c-43fb-8cf9-03d4bb96a225",
+              "dueDate": "2026-10-16",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆少儿借阅区 - 1楼",
+              "callNumber": "TU-092.2/4949",
+              "barcode": "54121180565535",
+              "circulationType": "少儿外借资料",
+              "rawStatus": "已借出",
+              "itemId": "49f50d4f-5e3f-41d3-832f-2dae9f6fddac",
+              "dueDate": "2026-10-18",
+              "availability": "unavailable"
+            }
+          ]
+        }
+      }
     }
   ]
 }

@@ -594,6 +594,56 @@
           ]
         }
       }
+    },
+    {
+      "ts": "2026-09-04T07:06:36.826Z",
+      "date": "2026-09-04",
+      "weekday": 5,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 3,
+          "available": 1,
+          "inLibrary": 1,
+          "unavailable": 1,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "TU-092.2/4443",
+              "barcode": "54121105406994",
+              "circulationType": "仅供阅览资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "in_library"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "TU-092.2/4443",
+              "barcode": "54121105406997",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已借出",
+              "itemId": "65525783-44a9-4871-946b-9002b4033006",
+              "dueDate": "2026-09-30",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "TU-092.2/4443",
+              "barcode": "54121105406996",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            }
+          ]
+        }
+      }
     }
   ]
 }
