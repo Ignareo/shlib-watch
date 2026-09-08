@@ -43,7 +43,20 @@ export function commitAndPush(message, { autoCommit = true, autoPush = true } = 
       git(["push"]);
       console.log("[git] 已推送到远端仓库。");
     } catch (error) {
-      console.warn(`[git] 推送失败（数据已提交到本地，可稍后手动 push）：${error.message}`);
+      // 远端有新提交（如 Actions 定时采样）导致 non-fast-forward 时，先变基再推
+      console.warn("[git] 推送被拒绝，尝试先拉取远端更新（git pull --rebase）…");
+      const pulled = git(["pull", "--rebase"], { allowFail: true });
+      if (pulled === null) {
+        git(["rebase", "--abort"], { allowFail: true });
+        console.warn("[git] 与远端数据冲突，已中止自动合并。数据已提交到本地，请手动 git pull 合并后再 push。");
+        return true;
+      }
+      try {
+        git(["push"]);
+        console.log("[git] 已推送到远端仓库。");
+      } catch (error2) {
+        console.warn(`[git] 推送失败（数据已提交到本地，可稍后手动 push）：${error2.message}`);
+      }
     }
   }
   return true;
