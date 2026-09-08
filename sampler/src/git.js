@@ -28,7 +28,7 @@ export function commitAndPush(message, { autoCommit = true, autoPush = true } = 
     git(["config", "user.email", "book-borrow-tracker@localhost"]);
   }
 
-  git(["add", "docs/data", "books.txt", "config.json"]);
+  git(["add", "docs/data", "books.txt", "config.json", ".cache/records.json"]);
   const status = git(["status", "--porcelain"], { allowFail: true });
   if (!status) {
     console.log("[git] 数据无变化，无需提交。");
