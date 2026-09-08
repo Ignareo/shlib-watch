@@ -1,5 +1,5 @@
 {
-  "bookId": "b18",
+  "bookId": "b25",
   "samples": [
     {
       "ts": "2026-09-08T06:23:01.890Z",
@@ -17,8 +17,8 @@
             {
               "branch": "上海图书馆（淮海路馆）",
               "location": "上海图书馆保存本书库",
-              "callNumber": "J429.3/8781-1",
-              "barcode": "54121112038803",
+              "callNumber": "I253.8/8911",
+              "barcode": "54121108708642",
               "circulationType": "保存资料",
               "rawStatus": "已归还",
               "itemId": null,
@@ -28,8 +28,8 @@
             {
               "branch": "上海图书馆（淮海路馆）",
               "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
-              "callNumber": "J429.3/8781-1",
-              "barcode": "54121112038804",
+              "callNumber": "I253.8/8911",
+              "barcode": "54121108708643",
               "circulationType": "参考外借资料",
               "rawStatus": "已归还",
               "itemId": null,
@@ -40,21 +40,21 @@
         },
         "上海图书馆（东馆）": {
           "total": 1,
-          "available": 0,
-          "inLibrary": 1,
+          "available": 1,
+          "inLibrary": 0,
           "unavailable": 0,
           "unknown": 0,
           "copies": [
             {
               "branch": "上海图书馆（东馆）",
-              "location": "上海图书馆东馆设计馆 - 5楼",
-              "callNumber": "J429.3/8781-1",
-              "barcode": "54121112038805",
-              "circulationType": "仅供阅览资料",
-              "rawStatus": "编目中（暂不借阅）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "I253.8/8911",
+              "barcode": "54121109829026",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已归还",
               "itemId": null,
               "dueDate": null,
-              "availability": "in_library"
+              "availability": "available"
             }
           ]
         }

@@ -1,5 +1,5 @@
 {
-  "bookId": "b18",
+  "bookId": "b26",
   "samples": [
     {
       "ts": "2026-09-08T06:23:01.890Z",
@@ -8,17 +8,17 @@
       "error": null,
       "branches": {
         "上海图书馆（淮海路馆）": {
-          "total": 2,
-          "available": 2,
+          "total": 3,
+          "available": 3,
           "inLibrary": 0,
           "unavailable": 0,
           "unknown": 0,
           "copies": [
             {
               "branch": "上海图书馆（淮海路馆）",
-              "location": "上海图书馆保存本书库",
-              "callNumber": "J429.3/8781-1",
-              "barcode": "54121112038803",
+              "location": "上海图书馆航头书库",
+              "callNumber": "A762-64/0486",
+              "barcode": "54121105004234",
               "circulationType": "保存资料",
               "rawStatus": "已归还",
               "itemId": null,
@@ -28,33 +28,24 @@
             {
               "branch": "上海图书馆（淮海路馆）",
               "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
-              "callNumber": "J429.3/8781-1",
-              "barcode": "54121112038804",
+              "callNumber": "A762-64/0486",
+              "barcode": "54121105004235",
               "circulationType": "参考外借资料",
               "rawStatus": "已归还",
               "itemId": null,
               "dueDate": null,
               "availability": "available"
-            }
-          ]
-        },
-        "上海图书馆（东馆）": {
-          "total": 1,
-          "available": 0,
-          "inLibrary": 1,
-          "unavailable": 0,
-          "unknown": 0,
-          "copies": [
+            },
             {
-              "branch": "上海图书馆（东馆）",
-              "location": "上海图书馆东馆设计馆 - 5楼",
-              "callNumber": "J429.3/8781-1",
-              "barcode": "54121112038805",
-              "circulationType": "仅供阅览资料",
-              "rawStatus": "编目中（暂不借阅）",
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "A762-64/0486",
+              "barcode": "54121105004236",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
               "itemId": null,
               "dueDate": null,
-              "availability": "in_library"
+              "availability": "available"
             }
           ]
         }
