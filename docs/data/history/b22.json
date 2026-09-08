@@ -2,74 +2,11 @@
   "bookId": "b22",
   "samples": [
     {
-      "ts": "2026-09-08T06:23:01.890Z",
+      "ts": "2026-09-08T07:05:42.640Z",
       "date": "2026-09-08",
       "weekday": 2,
-      "error": null,
-      "branches": {
-        "上海图书馆（淮海路馆）": {
-          "total": 3,
-          "available": 1,
-          "inLibrary": 0,
-          "unavailable": 2,
-          "unknown": 0,
-          "copies": [
-            {
-              "branch": "上海图书馆（淮海路馆）",
-              "location": "上海图书馆保存本书库",
-              "callNumber": "K92-49/6113#3",
-              "barcode": "54121111542755",
-              "circulationType": "保存资料",
-              "rawStatus": "已归还",
-              "itemId": null,
-              "dueDate": null,
-              "availability": "available"
-            },
-            {
-              "branch": "上海图书馆（淮海路馆）",
-              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
-              "callNumber": "K92-49/6113#3",
-              "barcode": "54121111542756",
-              "circulationType": "参考外借资料",
-              "rawStatus": "已借出",
-              "itemId": "da99484c-93b2-4bb0-b121-98b6216797f7",
-              "dueDate": "2026-10-27",
-              "availability": "unavailable"
-            },
-            {
-              "branch": "上海图书馆（淮海路馆）",
-              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
-              "callNumber": "K92-49/6113#3",
-              "barcode": "54121111542757",
-              "circulationType": "普通外借资料",
-              "rawStatus": "已借出",
-              "itemId": "e5d3ba6e-bd1b-4996-b9b5-a858b5b86318",
-              "dueDate": "2026-09-13",
-              "availability": "unavailable"
-            }
-          ]
-        },
-        "上海图书馆（东馆）": {
-          "total": 1,
-          "available": 0,
-          "inLibrary": 0,
-          "unavailable": 1,
-          "unknown": 0,
-          "copies": [
-            {
-              "branch": "上海图书馆（东馆）",
-              "location": "上海图书馆东馆阅读广场 - 3楼",
-              "callNumber": "K92-49/6113#3",
-              "barcode": "54121111542758",
-              "circulationType": "普通外借资料",
-              "rawStatus": "已借出",
-              "itemId": "53664dc2-2c0e-4087-ae44-5a153dff1e87",
-              "dueDate": "2026-11-02",
-              "availability": "unavailable"
-            }
-          ]
-        }
-      }
+      "error": "captcha",
+      "branches": {}
     }
   ]
 }

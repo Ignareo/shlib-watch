@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-08T06:23:01.890Z",
+  "updatedAt": "2026-09-08T07:05:42.640Z",
   "schedule": "每天",
   "books": [
     {
@@ -324,217 +324,191 @@
       "id": "b18",
       "title": "定格2000",
       "callNumber": "J429.3/8781-1",
-      "recordId": "98584543-1f77-4f75-881c-4b79585a86ba",
-      "recordUrl": "https://vufind.library.sh.cn/Record/98584543-1f77-4f75-881c-4b79585a86ba",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "铁合西街东 (2001-)"
-      ],
-      "publisher": "人民邮电出版社",
-      "publishedYear": "2026",
-      "materialType": "图书",
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
       "candidates": [],
       "historyFile": "data/history/b18.json",
-      "group": "建筑"
+      "group": "建筑",
+      "unresolvedCallNumbers": [
+        "J429.3/8781-1"
+      ]
     },
     {
       "id": "b19",
       "title": "多元与混合：香港文化漫步",
       "callNumber": "G127.658/3916",
-      "recordId": "f2a685b7-a3ed-4743-a6b7-81a5cf89c6aa",
-      "recordUrl": "https://vufind.library.sh.cn/Record/f2a685b7-a3ed-4743-a6b7-81a5cf89c6aa",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "宋歌"
-      ],
-      "publisher": "中西书局",
-      "publishedYear": "2024",
-      "materialType": "图书",
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
       "candidates": [],
       "historyFile": "data/history/b19.json",
-      "group": "香港"
+      "group": "香港",
+      "unresolvedCallNumbers": [
+        "G127.658/3916"
+      ]
     },
     {
       "id": "b20",
       "title": "这里是中国1",
       "callNumber": "K92-49/6113",
-      "recordId": "a80306a9-a7bb-481e-a06f-3f70a2155c15",
-      "recordUrl": "https://vufind.library.sh.cn/Record/a80306a9-a7bb-481e-a06f-3f70a2155c15",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "星球研究所",
-        "中国青藏高原研究会"
-      ],
-      "publisher": "中信出版集团股份有限公司",
-      "publishedYear": "2019",
-      "materialType": "图书",
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
       "candidates": [],
       "historyFile": "data/history/b20.json",
-      "group": "自然"
+      "group": "自然",
+      "unresolvedCallNumbers": [
+        "K92-49/6113"
+      ]
     },
     {
       "id": "b21",
       "title": "这里是中国2",
       "callNumber": "K92-49/6113#2",
-      "recordId": "88e82d35-4620-462b-837a-ade23b2ba868",
-      "recordUrl": "https://vufind.library.sh.cn/Record/88e82d35-4620-462b-837a-ade23b2ba868",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "星球研究所"
-      ],
-      "publisher": "中信出版集团股份",
-      "publishedYear": "2021",
-      "materialType": "图书",
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
       "candidates": [],
       "historyFile": "data/history/b21.json",
-      "group": "自然"
+      "group": "自然",
+      "unresolvedCallNumbers": [
+        "K92-49/6113#2"
+      ]
     },
     {
       "id": "b22",
       "title": "这里是中国3",
       "callNumber": "K92-49/6113#3",
-      "recordId": "367f9133-24f9-4a17-a52c-3fb45d821ac1",
-      "recordUrl": "https://vufind.library.sh.cn/Record/367f9133-24f9-4a17-a52c-3fb45d821ac1",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "星球研究所"
-      ],
-      "publisher": "中信出版集团股份有限公司",
-      "publishedYear": "2024",
-      "materialType": "图书",
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
       "candidates": [],
       "historyFile": "data/history/b22.json",
-      "group": "自然"
+      "group": "自然",
+      "unresolvedCallNumbers": [
+        "K92-49/6113#3"
+      ]
     },
     {
       "id": "b23",
       "title": "什么是新疆",
       "callNumber": "K924.5/6113",
-      "recordId": "04d609c1-b64f-4ad1-bc9c-40525223e2c2",
-      "recordUrl": "https://vufind.library.sh.cn/Record/04d609c1-b64f-4ad1-bc9c-40525223e2c2",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "星球研究所"
-      ],
-      "publisher": "中信出版集团股份有限公司",
-      "publishedYear": "2025",
-      "materialType": "图书",
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
       "candidates": [],
       "historyFile": "data/history/b23.json",
-      "group": "自然"
+      "group": "自然",
+      "unresolvedCallNumbers": [
+        "K924.5/6113"
+      ]
     },
     {
       "id": "b24",
       "title": "什么是云南",
       "callNumber": "K927.4-49/1440",
-      "recordId": "442f77a6-d7c3-490d-8ea0-56cdfd57f2a8",
-      "recordUrl": "https://vufind.library.sh.cn/Record/442f77a6-d7c3-490d-8ea0-56cdfd57f2a8",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "云南省地方志编纂委员会办公室",
-        "星球研究所"
-      ],
-      "publisher": "云南教育出版社",
-      "publishedYear": "2022",
-      "materialType": "图书",
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
       "candidates": [],
       "historyFile": "data/history/b24.json",
-      "group": "自然"
+      "group": "自然",
+      "unresolvedCallNumbers": [
+        "K927.4-49/1440"
+      ]
     },
     {
       "id": "b25",
       "title": "荣归：香港回归的前前后后 1842-1997",
       "callNumber": "I253.8/8911",
-      "recordId": "f2b43a60-fabe-4062-ad15-f9c24a82e619",
-      "recordUrl": "https://vufind.library.sh.cn/Record/f2b43a60-fabe-4062-ad15-f9c24a82e619",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "余玮"
-      ],
-      "publisher": "华文出版社",
-      "publishedYear": "2017",
-      "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "f2b43a60-fabe-4062-ad15-f9c24a82e619",
-          "title": "荣归：香港回归的前前后后 1842-1997",
-          "callNumber": "I253.8/8911",
-          "authors": [
-            "余玮"
-          ],
-          "publishedYear": "2017"
-        }
-      ],
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
+      "candidates": [],
       "historyFile": "data/history/b25.json",
-      "group": "历史"
+      "group": "历史",
+      "unresolvedCallNumbers": [
+        "I253.8/8911"
+      ]
     },
     {
       "id": "b26",
       "title": "邓小平与香港回归",
       "callNumber": "A762-64/0486",
-      "recordId": "0144e947-d029-4005-bc4c-3dc83a7f8d22",
-      "recordUrl": "https://vufind.library.sh.cn/Record/0144e947-d029-4005-bc4c-3dc83a7f8d22",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "刘金田",
-        "中共中央文献研究室第三编研部"
-      ],
-      "publisher": "中央文献出版社",
-      "publishedYear": "2008",
-      "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "0144e947-d029-4005-bc4c-3dc83a7f8d22",
-          "title": "邓小平与香港回归",
-          "callNumber": "A762-64/0486",
-          "authors": [
-            "刘金田",
-            "中共中央文献研究室第三编研部"
-          ],
-          "publishedYear": "2008"
-        }
-      ],
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
+      "candidates": [],
       "historyFile": "data/history/b26.json",
-      "group": "历史"
+      "group": "历史",
+      "unresolvedCallNumbers": [
+        "A762-64/0486"
+      ]
     },
     {
       "id": "b27",
       "title": "宇宙",
       "callNumber": "P159-49/4249-5",
-      "recordId": "63e9cf42-246f-4019-ba83-05c47b99c531",
-      "recordUrl": "https://vufind.library.sh.cn/Record/63e9cf42-246f-4019-ba83-05c47b99c531",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "(美) 萨根 Sagan, Carl 1934-1996",
-        "虞北冥"
-      ],
-      "publisher": "上海科学技术文献出版社",
-      "publishedYear": "2022",
-      "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "63e9cf42-246f-4019-ba83-05c47b99c531",
-          "title": "宇宙 = Cosmos",
-          "callNumber": "P159-49/4249-5",
-          "authors": [
-            "(美) 萨根 Sagan, Carl 1934-1996",
-            "虞北冥"
-          ],
-          "publishedYear": "2022"
-        }
-      ],
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
+      "candidates": [],
       "historyFile": "data/history/b27.json",
-      "group": "自然"
+      "group": "自然",
+      "unresolvedCallNumbers": [
+        "P159-49/4249-5"
+      ]
     },
     {
       "id": "b28",
@@ -543,44 +517,21 @@
         "P426.5-49/8612-2",
         "P426.5-49/8612-4"
       ],
-      "recordId": "f7c84ac4-067e-4108-8fb6-898038573f03",
-      "recordUrl": "https://vufind.library.sh.cn/Record/f7c84ac4-067e-4108-8fb6-898038573f03",
-      "resolveStatus": "resolved",
-      "needsReview": false,
-      "authors": [
-        "(Pretor Pinney, Gavin) 普雷特-平尼 (Pretor Pinney, Gavin)",
-        "王燕平 (女)",
-        "张超"
-      ],
-      "publisher": "译林出版社",
-      "publishedYear": "2018",
-      "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "f7c84ac4-067e-4108-8fb6-898038573f03",
-          "title": "云彩收集者手册 = The cloud collector's handbook",
-          "callNumber": "P426.5-49/8612-2",
-          "authors": [
-            "(Pretor Pinney, Gavin) 普雷特-平尼 (Pretor Pinney, Gavin)",
-            "王燕平 (女)",
-            "张超"
-          ],
-          "publishedYear": "2018"
-        },
-        {
-          "recordId": "f7e87eac-8a9e-4119-87c6-150e39db08ba",
-          "title": "云彩收集者手册：全新扩展版",
-          "callNumber": "P426.5-49/8612-4",
-          "authors": [
-            "(英) 普雷特-平尼 (Pretor-Pinney, Gavin)",
-            "王燕平",
-            "张超"
-          ],
-          "publishedYear": "2026"
-        }
-      ],
+      "recordId": null,
+      "recordUrl": null,
+      "resolveStatus": "captcha",
+      "needsReview": true,
+      "authors": [],
+      "publisher": null,
+      "publishedYear": null,
+      "materialType": null,
+      "candidates": [],
       "historyFile": "data/history/b28.json",
-      "group": "自然"
+      "group": "自然",
+      "unresolvedCallNumbers": [
+        "P426.5-49/8612-2",
+        "P426.5-49/8612-4"
+      ]
     }
   ],
   "branches": [
