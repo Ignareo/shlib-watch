@@ -21,6 +21,13 @@
       "weekday": 4,
       "error": "captcha",
       "branches": {}
+    },
+    {
+      "ts": "2026-09-11T07:09:20.984Z",
+      "date": "2026-09-11",
+      "weekday": 5,
+      "error": "captcha",
+      "branches": {}
     }
   ]
 }
