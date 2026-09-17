@@ -26,13 +26,9 @@ jobs:
       - name: 安装依赖
         run: cd sampler && npm install
 
-      - name: 恢复 record_id 缓存
-        uses: actions/cache@v4
-        with:
-          path: .cache/records.json
-          key: shlib-records-${{ hashFiles('books.txt') }}
-          restore-keys: |
-            shlib-records-
+      # record_id 缓存直接随仓库提交（见 .cache/records.json），checkout 即得全量缓存；
+      # 不再用 actions/cache 恢复——其 restore-keys 前缀回退会用旧快照覆盖仓库里的新缓存，
+      # 导致新增书目被迫实时检索、在 CI 的机房 IP 上触发人机验证（2026-09-08 起连续失败即因此）。
 
       - name: 执行采样
         run: cd sampler && node src/index.js sample
