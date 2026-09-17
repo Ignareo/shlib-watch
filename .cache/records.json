@@ -245,5 +245,170 @@
       "publishedYear": "2019",
       "materialType": "图书"
     }
+  },
+  "荣归：香港回归的前前后后 1842-1997|I253.8/8911": {
+    "recordId": "f2b43a60-fabe-4062-ad15-f9c24a82e619",
+    "meta": {
+      "title": "荣归：香港回归的前前后后 1842-1997",
+      "authors": [
+        "余玮"
+      ],
+      "publisher": "华文出版社",
+      "publishedYear": "2017",
+      "materialType": "图书"
+    }
+  },
+  "邓小平与香港回归|A762-64/0486": {
+    "recordId": "0144e947-d029-4005-bc4c-3dc83a7f8d22",
+    "meta": {
+      "title": "邓小平与香港回归",
+      "authors": [
+        "刘金田",
+        "中共中央文献研究室第三编研部"
+      ],
+      "publisher": "中央文献出版社",
+      "publishedYear": "2008",
+      "materialType": "图书"
+    }
+  },
+  "定格2000|J429.3/8781-1": {
+    "recordId": "98584543-1f77-4f75-881c-4b79585a86ba",
+    "meta": {
+      "title": "定格2000：千禧时代建筑印象",
+      "authors": [
+        "铁合西街东 (2001-)"
+      ],
+      "publisher": "人民邮电出版社",
+      "publishedYear": "2026",
+      "materialType": "图书"
+    }
+  },
+  "多元与混合：香港文化漫步|G127.658/3916": {
+    "recordId": "f2a685b7-a3ed-4743-a6b7-81a5cf89c6aa",
+    "meta": {
+      "title": "多元与混合：香港文化漫步 = Diversity and hybridity：a stroll through Hong Kong culture",
+      "authors": [
+        "宋歌"
+      ],
+      "publisher": "中西书局",
+      "publishedYear": "2024",
+      "materialType": "图书"
+    }
+  },
+  "这里是中国1|K92-49/6113": {
+    "recordId": "a80306a9-a7bb-481e-a06f-3f70a2155c15",
+    "meta": {
+      "title": "这里是中国 = Hi i'm China",
+      "authors": [
+        "星球研究所",
+        "中国青藏高原研究会"
+      ],
+      "publisher": "中信出版集团股份有限公司",
+      "publishedYear": "2019",
+      "materialType": "图书"
+    }
+  },
+  "这里是中国2|K92-49/6113#2": {
+    "recordId": "88e82d35-4620-462b-837a-ade23b2ba868",
+    "meta": {
+      "title": "这里是中国 = Hi I'am China. 2",
+      "authors": [
+        "星球研究所"
+      ],
+      "publisher": "中信出版集团股份",
+      "publishedYear": "2021",
+      "materialType": "图书"
+    }
+  },
+  "这里是中国3|K92-49/6113#3": {
+    "recordId": "367f9133-24f9-4a17-a52c-3fb45d821ac1",
+    "meta": {
+      "title": "这里是中国. 3",
+      "authors": [
+        "星球研究所"
+      ],
+      "publisher": "中信出版集团股份有限公司",
+      "publishedYear": "2024",
+      "materialType": "图书"
+    }
+  },
+  "什么是新疆|K924.5/6113": {
+    "recordId": "04d609c1-b64f-4ad1-bc9c-40525223e2c2",
+    "meta": {
+      "title": "什么是新疆 = Hi, i'm Xinjiang",
+      "authors": [
+        "星球研究所"
+      ],
+      "publisher": "中信出版集团股份有限公司",
+      "publishedYear": "2025",
+      "materialType": "图书"
+    }
+  },
+  "什么是云南|K927.4-49/1440": {
+    "recordId": "442f77a6-d7c3-490d-8ea0-56cdfd57f2a8",
+    "meta": {
+      "title": "什么是云南 = Inside Yunnan",
+      "authors": [
+        "云南省地方志编纂委员会办公室",
+        "星球研究所"
+      ],
+      "publisher": "云南教育出版社",
+      "publishedYear": "2022",
+      "materialType": "图书"
+    }
+  },
+  "宇宙|P159-49/4249-5": {
+    "recordId": "63e9cf42-246f-4019-ba83-05c47b99c531",
+    "meta": {
+      "title": "宇宙 = Cosmos",
+      "authors": [
+        "(美) 萨根 Sagan, Carl 1934-1996",
+        "虞北冥"
+      ],
+      "publisher": "上海科学技术文献出版社",
+      "publishedYear": "2022",
+      "materialType": "图书"
+    }
+  },
+  "云彩收集者手册|P426.5-49/8612-2": {
+    "recordId": "f7c84ac4-067e-4108-8fb6-898038573f03",
+    "meta": {
+      "title": "云彩收集者手册 = The cloud collector's handbook",
+      "authors": [
+        "(Pretor Pinney, Gavin) 普雷特-平尼 (Pretor Pinney, Gavin)",
+        "王燕平 (女)",
+        "张超"
+      ],
+      "publisher": "译林出版社",
+      "publishedYear": "2018",
+      "materialType": "图书"
+    }
+  },
+  "云彩收集者手册|P426.5-49/8612-4": {
+    "recordId": "f7e87eac-8a9e-4119-87c6-150e39db08ba",
+    "meta": {
+      "title": "云彩收集者手册：全新扩展版",
+      "authors": [
+        "(英) 普雷特-平尼 (Pretor-Pinney, Gavin)",
+        "王燕平",
+        "张超"
+      ],
+      "publisher": "译林出版社",
+      "publishedYear": "2026",
+      "materialType": "图书"
+    }
+  },
+  "超级沟通者|C912.11-49/4644-1": {
+    "recordId": "10aba636-10a7-42c1-9405-340c982e6fb3",
+    "meta": {
+      "title": "超级沟通者：与所有人连接的秘密 = Supercommunicators：how to unlock the secret language of connection",
+      "authors": [
+        "(美) 都希格 Duhigg, Charles",
+        "白瑞霞"
+      ],
+      "publisher": "中信出版集团股份有限公司",
+      "publishedYear": "2025",
+      "materialType": "图书"
+    }
   }
 }
