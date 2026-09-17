@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T06:08:27.780Z",
+  "updatedAt": "2026-09-17T07:25:16.942Z",
   "schedule": "每天",
   "books": [
     {
@@ -334,17 +334,7 @@
       "publisher": "人民邮电出版社",
       "publishedYear": "2026",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "98584543-1f77-4f75-881c-4b79585a86ba",
-          "title": "定格2000：千禧时代建筑印象",
-          "callNumber": "J429.3/8781-1",
-          "authors": [
-            "铁合西街东 (2001-)"
-          ],
-          "publishedYear": "2026"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b18.json",
       "group": "建筑"
     },
@@ -362,17 +352,7 @@
       "publisher": "中西书局",
       "publishedYear": "2024",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "f2a685b7-a3ed-4743-a6b7-81a5cf89c6aa",
-          "title": "多元与混合：香港文化漫步 = Diversity and hybridity：a stroll through Hong Kong culture",
-          "callNumber": "G127.658/3916",
-          "authors": [
-            "宋歌"
-          ],
-          "publishedYear": "2024"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b19.json",
       "group": "香港"
     },
@@ -391,18 +371,7 @@
       "publisher": "中信出版集团股份有限公司",
       "publishedYear": "2019",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "a80306a9-a7bb-481e-a06f-3f70a2155c15",
-          "title": "这里是中国 = Hi i'm China",
-          "callNumber": "K92-49/6113",
-          "authors": [
-            "星球研究所",
-            "中国青藏高原研究会"
-          ],
-          "publishedYear": "2019"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b20.json",
       "group": "自然"
     },
@@ -420,17 +389,7 @@
       "publisher": "中信出版集团股份",
       "publishedYear": "2021",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "88e82d35-4620-462b-837a-ade23b2ba868",
-          "title": "这里是中国 = Hi I'am China. 2",
-          "callNumber": "K92-49/6113#2",
-          "authors": [
-            "星球研究所"
-          ],
-          "publishedYear": "2021"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b21.json",
       "group": "自然"
     },
@@ -448,17 +407,7 @@
       "publisher": "中信出版集团股份有限公司",
       "publishedYear": "2024",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "367f9133-24f9-4a17-a52c-3fb45d821ac1",
-          "title": "这里是中国. 3",
-          "callNumber": "K92-49/6113#3",
-          "authors": [
-            "星球研究所"
-          ],
-          "publishedYear": "2024"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b22.json",
       "group": "自然"
     },
@@ -476,17 +425,7 @@
       "publisher": "中信出版集团股份有限公司",
       "publishedYear": "2025",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "04d609c1-b64f-4ad1-bc9c-40525223e2c2",
-          "title": "什么是新疆 = Hi, i'm Xinjiang",
-          "callNumber": "K924.5/6113",
-          "authors": [
-            "星球研究所"
-          ],
-          "publishedYear": "2025"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b23.json",
       "group": "自然"
     },
@@ -505,18 +444,7 @@
       "publisher": "云南教育出版社",
       "publishedYear": "2022",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "442f77a6-d7c3-490d-8ea0-56cdfd57f2a8",
-          "title": "什么是云南 = Inside Yunnan",
-          "callNumber": "K927.4-49/1440",
-          "authors": [
-            "云南省地方志编纂委员会办公室",
-            "星球研究所"
-          ],
-          "publishedYear": "2022"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b24.json",
       "group": "自然"
     },
@@ -534,17 +462,7 @@
       "publisher": "华文出版社",
       "publishedYear": "2017",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "f2b43a60-fabe-4062-ad15-f9c24a82e619",
-          "title": "荣归：香港回归的前前后后 1842-1997",
-          "callNumber": "I253.8/8911",
-          "authors": [
-            "余玮"
-          ],
-          "publishedYear": "2017"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b25.json",
       "group": "历史"
     },
@@ -563,18 +481,7 @@
       "publisher": "中央文献出版社",
       "publishedYear": "2008",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "0144e947-d029-4005-bc4c-3dc83a7f8d22",
-          "title": "邓小平与香港回归",
-          "callNumber": "A762-64/0486",
-          "authors": [
-            "刘金田",
-            "中共中央文献研究室第三编研部"
-          ],
-          "publishedYear": "2008"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b26.json",
       "group": "历史"
     },
@@ -593,18 +500,7 @@
       "publisher": "上海科学技术文献出版社",
       "publishedYear": "2022",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "63e9cf42-246f-4019-ba83-05c47b99c531",
-          "title": "宇宙 = Cosmos",
-          "callNumber": "P159-49/4249-5",
-          "authors": [
-            "(美) 萨根 Sagan, Carl 1934-1996",
-            "虞北冥"
-          ],
-          "publishedYear": "2022"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b27.json",
       "group": "自然"
     },
@@ -627,30 +523,7 @@
       "publisher": "译林出版社",
       "publishedYear": "2018",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "f7c84ac4-067e-4108-8fb6-898038573f03",
-          "title": "云彩收集者手册 = The cloud collector's handbook",
-          "callNumber": "P426.5-49/8612-2",
-          "authors": [
-            "(Pretor Pinney, Gavin) 普雷特-平尼 (Pretor Pinney, Gavin)",
-            "王燕平 (女)",
-            "张超"
-          ],
-          "publishedYear": "2018"
-        },
-        {
-          "recordId": "f7e87eac-8a9e-4119-87c6-150e39db08ba",
-          "title": "云彩收集者手册：全新扩展版",
-          "callNumber": "P426.5-49/8612-4",
-          "authors": [
-            "(英) 普雷特-平尼 (Pretor-Pinney, Gavin)",
-            "王燕平",
-            "张超"
-          ],
-          "publishedYear": "2026"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b28.json",
       "group": "自然"
     },
@@ -669,18 +542,7 @@
       "publisher": "中信出版集团股份有限公司",
       "publishedYear": "2025",
       "materialType": "图书",
-      "candidates": [
-        {
-          "recordId": "10aba636-10a7-42c1-9405-340c982e6fb3",
-          "title": "超级沟通者：与所有人连接的秘密 = Supercommunicators：how to unlock the secret language of connection",
-          "callNumber": "C912.11-49/4644-1",
-          "authors": [
-            "(美) 都希格 Duhigg, Charles",
-            "白瑞霞"
-          ],
-          "publishedYear": "2025"
-        }
-      ],
+      "candidates": [],
       "historyFile": "data/history/b29.json",
       "group": "处世"
     }
