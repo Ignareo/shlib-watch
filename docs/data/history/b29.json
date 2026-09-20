@@ -210,6 +210,76 @@
           ]
         }
       }
+    },
+    {
+      "ts": "2026-09-20T07:36:31.603Z",
+      "date": "2026-09-20",
+      "weekday": 7,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 3,
+          "available": 1,
+          "inLibrary": 0,
+          "unavailable": 1,
+          "unknown": 1,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "C912.11-49/4644-1",
+              "barcode": "54121111755126",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "C912.11-49/4644-1",
+              "barcode": "54121111755127",
+              "circulationType": "参考外借资料",
+              "rawStatus": "运输中",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "unknown"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "C912.11-49/4644-1",
+              "barcode": "54121111843279",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出",
+              "itemId": "a8051a51-5a9f-406e-bee8-0c47ad54fe64",
+              "dueDate": "2026-10-26",
+              "availability": "unavailable"
+            }
+          ]
+        },
+        "上海图书馆（东馆）": {
+          "total": 1,
+          "available": 1,
+          "inLibrary": 0,
+          "unavailable": 0,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "C912.11-49/4644-1",
+              "barcode": "54121111755128",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            }
+          ]
+        }
+      }
     }
   ]
 }
