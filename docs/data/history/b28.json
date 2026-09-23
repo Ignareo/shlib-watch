@@ -867,6 +867,140 @@
           ]
         }
       }
+    },
+    {
+      "ts": "2026-09-23T07:34:46.169Z",
+      "date": "2026-09-23",
+      "weekday": 3,
+      "error": null,
+      "branches": {
+        "上海图书馆（淮海路馆）": {
+          "total": 5,
+          "available": 2,
+          "inLibrary": 0,
+          "unavailable": 2,
+          "unknown": 1,
+          "copies": [
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "P426.5-49/8612-2",
+              "barcode": "54121108941894",
+              "circulationType": "保存资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "P426.5-49/8612-2",
+              "barcode": "54121108941895",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "available"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆( 淮海路馆 ) 中文书刊外借室（2楼普通借阅区）",
+              "callNumber": "P426.5-49/8612-2",
+              "barcode": "54121108941897",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出",
+              "itemId": "ee7163cc-40a8-4fd7-9249-1ccf3133afb9",
+              "dueDate": "2026-10-19",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆（淮海路馆）基藏书库（1楼参考借阅区）",
+              "callNumber": "P426.5-49/8612-4",
+              "barcode": "54121112194636",
+              "circulationType": "参考外借资料",
+              "rawStatus": "已借出",
+              "itemId": "52c00be2-e007-42cd-91ea-e05c2655068f",
+              "dueDate": "2026-11-06",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（淮海路馆）",
+              "location": "上海图书馆保存本书库",
+              "callNumber": "P426.5-49/8612-4",
+              "barcode": "54121112194635",
+              "circulationType": "保存资料",
+              "rawStatus": "编目中（暂不借阅）",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "unknown"
+            }
+          ]
+        },
+        "上海图书馆（东馆）": {
+          "total": 2,
+          "available": 0,
+          "inLibrary": 1,
+          "unavailable": 1,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆阅读广场 - 3楼",
+              "callNumber": "P426.5-49/8612-2",
+              "barcode": "54121109176023",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出",
+              "itemId": "c94b06f8-6c72-47ff-8479-a20b183e1a17",
+              "dueDate": "2026-11-01",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆（东馆）",
+              "location": "上海图书馆东馆前沿科技馆 - 5楼",
+              "callNumber": "P426.5-49/8612-4",
+              "barcode": "54121112074551",
+              "circulationType": "仅供阅览资料",
+              "rawStatus": "已归还",
+              "itemId": null,
+              "dueDate": null,
+              "availability": "in_library"
+            }
+          ]
+        },
+        "上海图书馆网借中心": {
+          "total": 2,
+          "available": 0,
+          "inLibrary": 0,
+          "unavailable": 2,
+          "unknown": 0,
+          "copies": [
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "P426.5-49/8612-2",
+              "barcode": "54121108941896",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出",
+              "itemId": "140e004d-6916-415a-b661-e95f5e4851f6",
+              "dueDate": "2026-10-26",
+              "availability": "unavailable"
+            },
+            {
+              "branch": "上海图书馆网借中心",
+              "location": "上海图书馆享借中心享借库",
+              "callNumber": "P426.5-49/8612-2",
+              "barcode": "54121111461532",
+              "circulationType": "普通外借资料",
+              "rawStatus": "已借出",
+              "itemId": "ef83237c-0cef-4029-8d93-303713d3b9e3",
+              "dueDate": "2026-10-27",
+              "availability": "unavailable"
+            }
+          ]
+        }
+      }
     }
   ]
 }
